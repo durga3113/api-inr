@@ -1,4 +1,5 @@
 require('../settings');
+const { sendMessage } = require('../Baileys/whatsapp.js');
 const passport = require('passport');
 require('../controller/passportLocal')(passport);
 const express = require('express');
@@ -15,11 +16,7 @@ const containsEmoji = require('contains-emoji');
 const Recaptcha = require('express-recaptcha').RecaptchaV2;
 const recaptcha = new Recaptcha(recaptcha_key_1, recaptcha_key_2);
 const OTP = require('../model/otp');
-const otpGenerator = require('otp-generator');
 const { sendOTPEmail } = require('../controller/sendotp');
-
-//_______________________ ┏ Function ┓ _______________________\\
-
 
 function checkAuth(req, res, next) {
     if (req.isAuthenticated()) {
@@ -68,6 +65,11 @@ function captchaRegister(req, res, next) {
     }
  }
 
+ function generateOTP() {
+    const min = 100000;
+    const max = 999999;
+    return Math.floor(Math.random() * (max - min + 1)) + min;
+}
 //_______________________ ┏ Router ┓ _______________________\\
 
 
@@ -170,13 +172,12 @@ router.post('/signup', recaptcha.middleware.verify, captchaRegister, async (req,
                 limitApikey: LimitApikey
             });
             await newUser.save();
-            const otp = otpGenerator.generate(6, { digits: true });
-            const expiryDate = new Date();
-            expiryDate.setMinutes(expiryDate.getMinutes() + 15);
+            const otp = generateOTP();
             const newOTP = new OTP({
-                email: email,
-                otp: otp,
-                expiryDate: expiryDate
+               email: email,
+               otp: otp,
+               creationDate: new Date(),
+               expiryDate: new Date(Date.now() + 15 * 60 * 1000)
             });
 
             await newOTP.save();
@@ -204,18 +205,12 @@ router.get('/verify', (req, res) => {
 router.get('/verify-otp', async (req, res) => {
     const otp = req.query.otp; 
     try {
-        const otpData = await OTP.findOne({ otp: otp });
+        const otpData = await OTP.findOneAndDelete({ otp: otp });
         if (otpData) {
-            if (otpData.expiryDate < new Date()) {
-                console.log("OTP has expired");
-                req.flash('error_messages', 'OTP has expired');
-                return res.redirect('/login');
-            }
             const userData = await user.findOne({ email: otpData.email });
             if (userData) {
                 userData.isVerified = true;
                 await userData.save();
-                await OTP.findOneAndDelete({ otp: otp });
                 console.log("User verified successfully");
                 req.flash('success_messages', 'Email Verified Successfully');
                 return res.redirect('/login');
@@ -235,6 +230,89 @@ router.get('/verify-otp', async (req, res) => {
         return res.redirect('/login');
     }
 });
+
+router.get('/getotp', (req, res) => {
+    if (req.isAuthenticated()) {
+        res.redirect("/docs");
+    } else {
+        res.render("get-otp");
+    }
+});
+
+router.get('/get-otp', async (req, res) => {
+    const { method, email, phoneNumber } = req.query;
+
+    if (!method || (!email && !phoneNumber)) {
+        return res.status(400).json({ error: 'either email or phoneNumber are required in the query parameters.' });
+    }
+
+    try {
+        let existingUser;
+        if (email) {
+            existingUser = await user.findOne({ email: email });
+        } else if (phoneNumber) {
+            existingUser = await user.findOne({ phoneNumber: phoneNumber });
+        }
+
+        if (existingUser) {
+            return res.status(400).json({ error: 'Email or phone number already belongs to an existing user.' });
+        }
+
+        if (method === 'email') {
+            if (!email) {
+                return res.status(400).json({ error: 'Email is required for email method.' });
+            }
+            const otp = generateOTP();
+            const newOTP = new OTP({
+                email: email,
+                otp: otp,
+                creationDate: new Date(),
+                expiryDate: new Date(Date.now() + 15 * 60 * 1000)
+            });
+            await newOTP.save();
+            await sendOTPEmail(email, otp);
+            return res.status(200).json({ message: 'OTP sent to email successfully.' });
+        } else if (method === 'whatsapp') {
+            if (!phoneNumber) {
+                return res.status(400).json({ error: 'PhoneNumber is required for WhatsApp method.' });
+            }
+            const otp = generateOTP();
+            const newOTP = new OTP({
+                phoneNumber: phoneNumber,
+                otp: otp,
+                creationDate: new Date(),
+                expiryDate: new Date(Date.now() + 15 * 60 * 1000)
+            });
+            await newOTP.save();
+            const sock = req.app.get('whatsappSock');
+            await sendMessage(sock, phoneNumber, `Your OTP is: ${otp}`);
+            return res.status(200).json({ message: 'OTP sent to WhatsApp successfully.' });
+        } else {
+            return res.status(400).json({ error: 'Invalid method. Use either email or whatsapp.' });
+        }
+    } catch (error) {
+        console.error('Error in getting OTP:', error);
+        return res.status(500).json({ error: 'An error occurred while getting OTP.' });
+    }
+});
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 router.get('/forgot-password', recaptcha.middleware.render, async (req, res) => {
     res.render('forgot-password.ejs',  { 
