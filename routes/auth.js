@@ -118,7 +118,7 @@ router.get('/signup', recaptcha.middleware.render, (req, res) => {
 });
 
 router.post('/signup', recaptcha.middleware.verify, captchaRegister, async (req, res) => {
-    const { email, username, password, confirmpassword } = req.body;
+    const { email, username, password, confirmpassword, phoneNumber } = req.body;
     var createpw = new passwordValidator();
     createpw.is().min(8).is().max(30).has().uppercase().has().lowercase().has().digits().has().not().spaces().is().not().oneOf(['Passw0rd', 'Password123']);
 
@@ -130,7 +130,7 @@ router.post('/signup', recaptcha.middleware.verify, captchaRegister, async (req,
         var checkemail = true
     }
 
-    if (!email || !username || !password || !confirmpassword) {
+    if (!email || !username || !password || !confirmpassword || !phoneNumber) {
         req.flash('error_messages', 'All Fields Required !');
         return res.redirect('/signup');
     } else if (password != confirmpassword) {
@@ -156,10 +156,10 @@ router.post('/signup', recaptcha.middleware.verify, captchaRegister, async (req,
         return res.redirect('/signup');
     } else {
         try {
-            const existingUser = await user.findOne({ $or: [{ email: email }, { username: username }] });
+            const existingUser = await user.findOne({ $or: [{ email: email }, { username: username }, { phoneNumber: phoneNumber }] });
             if (existingUser) {
                 req.flash('error_messages', "User Exists, Try Logging In !");
-                return res.redirect('/signup');
+                return res.redirect('/login');
             }
             const salt = await bcryptjs.genSalt(12);
             const hash = await bcryptjs.hash(password, salt);
@@ -169,22 +169,12 @@ router.post('/signup', recaptcha.middleware.verify, captchaRegister, async (req,
                 email: email,
                 password: hash,
                 apikey: apikey,
+                phoneNumber: phoneNumber,
                 limitApikey: LimitApikey
             });
             await newUser.save();
-            const otp = generateOTP();
-            const newOTP = new OTP({
-               email: email,
-               otp: otp,
-               creationDate: new Date(),
-               expiryDate: new Date(Date.now() + 15 * 60 * 1000)
-            });
-
-            await newOTP.save();
-            await sendOTPEmail(email, otp);
-
-            req.flash('success_messages', "Account Created Successfully. Please check your email for OTP.");
-            res.redirect('/verify');
+            req.flash('success_messages', "Account Created. Please choose method to get otp.");
+            res.redirect('/getotp');
         } catch (error) {
             console.error('Error in signup:', error);
             req.flash('error_messages', 'An error occurred during registration. Please try again later.');
@@ -235,83 +225,62 @@ router.get('/getotp', (req, res) => {
     if (req.isAuthenticated()) {
         res.redirect("/docs");
     } else {
-        res.render("get-otp");
+        res.render("getotp");
     }
 });
 
 router.get('/get-otp', async (req, res) => {
-    const { method, email, phoneNumber } = req.query;
+    const { content } = req.query;
 
-    if (!method || (!email && !phoneNumber)) {
-        return res.status(400).json({ error: 'either email or phoneNumber are required in the query parameters.' });
+    const emailRegex = /^\w+([\.-]?\w+)*@\w+([\.-]?\w+)*(\.\w{2,3})+$/;
+    const phoneRegex = /^[0-9\-\+\(\) ]{6,}$/;
+
+    let method;
+
+    if (emailRegex.test(content)) {
+        method = 'email';
+    } else if (phoneRegex.test(content)) {
+        method = 'whatsapp';
+    } else {
+        return res.status(400).json({ error: 'Invalid content. Please provide a valid email or phone number.' });
     }
 
     try {
         let existingUser;
-        if (email) {
-            existingUser = await user.findOne({ email: email });
-        } else if (phoneNumber) {
-            existingUser = await user.findOne({ phoneNumber: phoneNumber });
+        if (method === 'email') {
+            existingUser = await user.findOne({ email: content });
+        } else if (method === 'whatsapp') {
+            existingUser = await user.findOne({ phoneNumber: content });
         }
 
-        if (existingUser) {
-            return res.status(400).json({ error: 'Email or phone number already belongs to an existing user.' });
+        if (!existingUser) {
+            return res.redirect('/signup');
         }
+
+        const otp = generateOTP();
+        const newOTP = new OTP({
+            [method === 'email' ? 'email' : 'phoneNumber']: content,
+            otp: otp,
+            creationDate: new Date(),
+            expiryDate: new Date(Date.now() + 15 * 60 * 1000)
+        });
+        await newOTP.save();
 
         if (method === 'email') {
-            if (!email) {
-                return res.status(400).json({ error: 'Email is required for email method.' });
-            }
-            const otp = generateOTP();
-            const newOTP = new OTP({
-                email: email,
-                otp: otp,
-                creationDate: new Date(),
-                expiryDate: new Date(Date.now() + 15 * 60 * 1000)
-            });
-            await newOTP.save();
-            await sendOTPEmail(email, otp);
-            return res.status(200).json({ message: 'OTP sent to email successfully.' });
+            await sendOTPEmail(content, otp);
+            console.log('OTP sent to email successfully:', content);
         } else if (method === 'whatsapp') {
-            if (!phoneNumber) {
-                return res.status(400).json({ error: 'PhoneNumber is required for WhatsApp method.' });
-            }
-            const otp = generateOTP();
-            const newOTP = new OTP({
-                phoneNumber: phoneNumber,
-                otp: otp,
-                creationDate: new Date(),
-                expiryDate: new Date(Date.now() + 15 * 60 * 1000)
-            });
-            await newOTP.save();
             const sock = req.app.get('whatsappSock');
-            await sendMessage(sock, phoneNumber, `Your OTP is: ${otp}`);
-            return res.status(200).json({ message: 'OTP sent to WhatsApp successfully.' });
-        } else {
-            return res.status(400).json({ error: 'Invalid method. Use either email or whatsapp.' });
+            await sendMessage(sock, content, `Your OTP is: ${otp}`);
+            console.log('OTP sent to WhatsApp successfully:', content);
         }
+
+        return res.redirect('/verify');
     } catch (error) {
         console.error('Error in getting OTP:', error);
         return res.status(500).json({ error: 'An error occurred while getting OTP.' });
     }
 });
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
 
 
 router.get('/forgot-password', recaptcha.middleware.render, async (req, res) => {

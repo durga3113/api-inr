@@ -34,6 +34,9 @@ async function getApikey(id) {
 router.get('/', (req, res) => {
         res.render("home");
 });
+router.get('/wiki', (req, res) => {
+  res.render("dash");
+});
 
 router.get('/docs',  checkAuth, async (req, res) => {
   let getinfo =  await getApikey(req.user.id)
