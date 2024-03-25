@@ -8,6 +8,7 @@ const crypto = require('crypto');
 const isGmail = require('is-gmail')
 const resetToken = require('../model/resetTokens');
 const user = require('../model/user');
+const dataweb = require('../model/DataWeb');
 const mailer = require('../controller/sendMail');
 const bcryptjs = require('bcryptjs');
 const passwordValidator = require('password-validator');
@@ -17,6 +18,17 @@ const Recaptcha = require('express-recaptcha').RecaptchaV2;
 const recaptcha = new Recaptcha(recaptcha_key_1, recaptcha_key_2);
 const OTP = require('../model/otp');
 const { sendOTPEmail } = require('../controller/sendotp');
+
+
+async function updateUserCount() {
+    try {
+        const totalUsers = await user.countDocuments();
+        await dataweb.findOneAndUpdate({}, { totalUsers: totalUsers }, { upsert: true });
+        console.log('Total users count updated successfully.');
+    } catch (error) {
+        console.error('Error updating total users count:', error);
+    }
+}
 
 function checkAuth(req, res, next) {
     if (req.isAuthenticated()) {
@@ -173,6 +185,7 @@ router.post('/signup', recaptcha.middleware.verify, captchaRegister, async (req,
                 limitApikey: LimitApikey
             });
             await newUser.save();
+            await updateUserCount();
             req.flash('success_messages', "Account Created. Please choose method to get otp.");
             res.redirect('/getotp');
         } catch (error) {

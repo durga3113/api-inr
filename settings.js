@@ -3,10 +3,11 @@ creator = "Cipher"; // Name
 port = 8080; //port host
 LimitApikey = 10; // Limit Apikey default
 Limitpremium = 9999; //premium limit default
-
+caitkn ='ca9753a451e4563e118350d99c60a0399be1ff8a'
 keymongodb = "mongodb+srv://api:api@api.pldyojn.mongodb.net/?retryWrites=true&w=majority&appName=api"; //example "mongodb+srv://user:password@name_database.mongodb.net/?retryWrites=true&w=majority";
 mongodbauth = "mongodb+srv://uploader2:uploader2@uploader2.uhnmx1u.mongodb.net/?retryWrites=true&w=majority&appName=uploader2" //for bailyes auth
 flush = false //clear database of all existing whatsapp session
+puppeteerpath = '/usr/bin/chromium-browser'
 
 //___________ ┏  SMTP Setting  ┓ ___________\\
 

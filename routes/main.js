@@ -12,6 +12,15 @@ const User = require('../model/user');
 
 //_______________________ ┏ Function ┓ _______________________\\
 
+async function VisitorsCount() {
+  try {
+      await dataweb.updateOne({}, { $inc: { visitors: 1 } }); 
+      console.log('new visitor yay');
+  } catch (error) {
+      console.error('Error incrementing visitors count:', error);
+  }
+}
+
 function checkAuth(req, res, next) {
     if (req.isAuthenticated()) {
         res.set('Cache-Control', 'no-cache, private, no-store, must-revalidate, post-check=0, pre-check=0');
@@ -28,10 +37,17 @@ async function getApikey(id) {
     return {apikey: users.apikey, username: users.username, checklimit: users.limitApikey, isVerified : users.isVerified, RequestToday: limit.RequestToday};
 }
 
-
+const incviscnt = async (req, res, next) => {
+  try {
+      await VisitorsCount();
+  } catch (error) {
+      console.error('Error incrementing visitors count:', error);
+  }
+  next();
+};
 //_______________________ ┏ Router ┓ _______________________\\
 
-router.get('/', (req, res) => {
+router.get('/', incviscnt, (req, res) => {
         res.render("home");
 });
 router.get('/wiki', (req, res) => {
