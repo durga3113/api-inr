@@ -1,7 +1,12 @@
-
 require('../settings')
 const express = require('express')
 const translate = require('translate-google')
+const database = require("../MongoAuth/shortlinkdb");
+const db = database.get("short-link");
+const logger = require("morgan");
+const cors = require("cors");
+const cookieParser = require("cookie-parser");
+const bodyParser = require("body-parser");
 const axios = require('axios');
 const alip = require("../lib/listdl")
 const textto = require('soundoftext-js')
@@ -52,7 +57,26 @@ async function limitapikey(apikey) {
        await User.findOneAndUpdate({apikey: apikey},{$inc: { limitApikey: -1}},{upsert: true,new: true})
 }
 
+const isUrl2 = (url) => {
+    return url.match(new RegExp(/https?:\/\/(www\.)?[-a-zA-Z0-9@:%._+~#=]{1,256}\.[a-zA-Z0-9()]{1,6}\b([-a-zA-Z0-9()@:%_+.~#?&/=]*)/, 'gi'))
+}
+
+function makeid(length) {
+    let result = '';
+    const characters = 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789-_';
+    const charactersLength = characters.length;
+    for (let i = 0; i < length; i++) {
+        result += characters.charAt(Math.floor(Math.random() * charactersLength));
+    }
+    return result;
+}
 //―――――――――――――――――――――――――――――――――――――――――― ┏  AI  ┓ ―――――――――――――――――――――――――――――――――――――――――― \\
+router.use(cors());
+router.use(logger('dev'));
+router.use(express.json());
+router.use(bodyParser.urlencoded({ extended: true }));
+router.use(bodyParser.json());
+router.use(cookieParser());
 
 router.get('/api/ai/c-ai', cekKey, async (req, res) => {
     const characterId = req.query.characterid || 'Uskj6m3pjr0Q-91CQvSzXGJPIfaWvtMwQigp54VnQZw';
@@ -1783,6 +1807,170 @@ router.get('/api/linkshort/bitly', cekKey, async (req, res, next) => {
 	 res.json(loghandler.error)
 	});
 })
+//================================================={alphas short url system}==================================
+router.all('/api/linkshort/alpha/custom', cekKey, async (req, res) => {
+    if (req.method === 'POST' || req.method === 'GET') {
+        const url = req.method === 'POST' ? req.body.url : req.query.url;
+        const customId = req.method === 'POST' ? req.body.customId : req.query.customId;
+        if (!url) {
+            return res.status(400).json({
+                status: false,
+				creator: `${creator}`,
+                message: "Please provide a 'url' parameter"
+            });
+        }
+        if (!isUrl2(url)) {
+            return res.status(400).json({
+                status: false,
+				creator: `${creator}`,
+                message: "Please provide a valid URL parameter"
+            });
+        }
+        let id;
+        if (customId) {
+            const checkCustomId = await db.findOne({ id: customId });
+            if (checkCustomId) {
+                return res.status(400).json({
+                    status: false,
+					creator: `${creator}`,
+                    message: "Custom ID already exists, please try another one"
+                });
+            }
+            id = customId;
+        } else {
+            id = makeid(4);
+        }
+        const deleteId = makeid(18);
+        db.insert({
+            id,
+            url,
+            delete: deleteId
+        })
+        .then(() => res.status(200).json({
+            status: true,
+			creator: `${creator}`,
+            message: "Short link created successfully",
+            result: {
+                id,
+				link: `https://${domain}/${id}`,
+                delete: deleteId
+            }
+        }))
+	  limitapikey(req.query.apikey)
+        .catch((err) => {
+            console.log(err);
+            res.status(500).json({
+                status: false,
+				creator: `${creator}`,
+                message: "Internal server error"
+            });
+        });
+    } else {
+        return res.status(405).json({
+            status: false,
+			creator: `${creator}`,
+            message: "Method Not Allowed"
+        });
+    }
+});
+
+router.get('/:id', async (req, res, next) => {
+    db.findOne({
+        id: req.params.id
+    }).then((result) => {
+        if (result == null) return next();
+        else res.redirect(result.url);
+    });
+});
+
+router.all('/api/linkshort/alpha/delete/:id', cekKey, async (req, res) => {
+    if (req.method === 'GET' || req.method === 'POST') {
+        db.findOne({
+            delete: req.params.id
+        }).then((result) => {
+            if (result == null) return res.status(404).json({
+                status: false,
+				creator: `${creator}`,
+                message: "ID not found"
+            });
+            
+            if (req.method === 'GET' || req.method === 'POST') {
+                db.findOneAndDelete({
+                    delete: req.params.id
+                }).then(() => {
+                    res.redirect('/docs');
+                }).catch(() => {
+                    res.sendStatus(500);
+                });
+            } else {
+                res.redirect('/docs');
+            }
+        });
+    } else {
+        return res.status(405).json({
+            status: false,
+			creator: `${creator}`,
+            message: "Method Not Allowed"
+        });
+    }
+});
+
+router.all('/api/linkshort/alpha/create', cekKey, async (req, res) => {
+    if (req.method === 'GET' || req.method === 'POST') {
+        const url = req.method === 'POST' ? req.body.url : (req.query.url || '');
+
+        if (!url) {
+            return res.status(400).json({
+                status: false,
+				creator: `${creator}`,
+                message: "Please provide a 'url' parameter"
+            });
+        }
+
+        if (!isUrl2(url)) {
+            return res.status(400).json({
+                status: false,
+				creator: `${creator}`,
+                message: "Please provide a valid URL parameter"
+            });
+        }
+
+        const id = makeid(4);
+        const deleteId = makeid(18);
+
+        db.insert({
+            id,
+            url,
+            delete: deleteId
+        })
+        .then(() => res.status(200).json({
+			status: true,
+			creator: `${creator}`,
+            message: "Short link created successfully",
+            result: {
+                id,
+				link: `https://${domain}/${id}`,
+                delete: deleteId
+            }
+        }))
+		limitapikey(req.query.apikey)
+        .catch((err) => {
+            console.log(err);
+            res.status(500).json({
+                status: false,
+				creator: `${creator}`,
+                message: "Internal server error"
+            });
+        });
+    } else {
+        return res.status(405).json({
+            status: false,
+			creator: `${creator}`,
+            message: "Method Not Allowed"
+        });
+    }
+});
+
 
 //―――――――――――――――――――――――――――――――――――――――――― ┏  Infomation  ┓ ―――――――――――――――――――――――――――――――――――――――――― \\
 

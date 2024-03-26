@@ -10,8 +10,8 @@
     "lib": "lib"
   },
   "scripts": {
-    "start": "node server.js",
-    "node": "nodemon server.js"
+    "start": "node server.js > output.log",
+    "node": "nodemon server.js > output.log"
   },
   "repository": {
     "type": "git",
@@ -33,7 +33,7 @@
     "axios": "^0.27.2",
     "bcryptjs": "^2.4.3",
     "bitly": "^7.1.2",
-    "body-parser": "^1.20.1",
+    "body-parser": "^1.20.2",
     "canvacord": "^5.3.0",
     "canvas": "^2.9.1",
     "canvas-gif": "github:AlipBot/canvas-gif-attp",
@@ -69,6 +69,8 @@
     "millify": "^5.0.1",
     "mongodb": "^6.5.0",
     "mongoose": "^6.8.0",
+    "monk": "^7.3.4",
+    "morgan": "^1.10.0",
     "node_characterai": "latest",
     "node-cron": "^3.0.2",
     "node-fetch": "^2.6.1",

@@ -1,3 +1,4 @@
 node_modules
 .env
 qr.png
+output.log
