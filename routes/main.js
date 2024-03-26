@@ -1,5 +1,4 @@
 __path = process.cwd()
-
 require('../settings');
 const express = require('express');
 const router = express.Router();
@@ -32,9 +31,37 @@ function checkAuth(req, res, next) {
 }
 
 async function getApikey(id) {
-    let limit = await dataweb.findOne();
-    let users = await User.findOne({_id: id})
-    return {apikey: users.apikey, username: users.username, checklimit: users.limitApikey, isVerified : users.isVerified, RequestToday: limit.RequestToday};
+  let limit = await dataweb.findOne();
+  let users = await User.findOne({_id: id})
+  return {
+      apikey: users.apikey,
+      username: users.username,
+      checklimit: users.limitApikey,
+      isVerified: users.isVerified,
+      RequestToday: limit.RequestToday,
+      totalUsers: limit.totalUsers,
+      totalRequests: limit.totalRequests,
+      visitors: limit.visitors
+  };
+}
+async function getApiStats() {
+  let limit = await dataweb.findOne();
+  await updateUserCount();
+  return {
+    totalUsers: limit.totalUsers,
+    totalRequests: limit.totalRequests,
+    RequestToday: limit.RequestToday,
+    visitors: limit.visitors
+  };
+}
+async function updateUserCount() {
+  try {
+      const totalUsers = await User.countDocuments();
+      await dataweb.findOneAndUpdate({}, { totalUsers: totalUsers }, { upsert: true });
+      console.log('Total users count updated successfully.');
+  } catch (error) {
+      console.error('Error updating total users count:', error);
+  }
 }
 
 const incviscnt = async (req, res, next) => {
@@ -50,14 +77,16 @@ const incviscnt = async (req, res, next) => {
 router.get('/', incviscnt, (req, res) => {
         res.render("home");
 });
-router.get('/wiki', (req, res) => {
-  res.render("dash");
+router.get('/wiki',incviscnt, async (req, res) => {
+  let getinfo =  await getApiStats()
+  let { totalUsers, totalRequests , RequestToday, visitors } = getinfo
+  res.render("dash", { totalUsers: totalUsers, totalRequests: totalRequests, visitors: visitors, RequestToday: RequestToday });
 });
 
 router.get('/docs',  checkAuth, async (req, res) => {
   let getinfo =  await getApikey(req.user.id)
-  let { apikey, username, checklimit, isVerified , RequestToday } = getinfo
-    res.render("docs", { username: username, verified: isVerified, apikey: apikey, limit: checklimit , RequestToday: RequestToday });
+  let { apikey, username, checklimit, isVerified , RequestToday, visitors } = getinfo
+    res.render("docs", { username: username, verified: isVerified, apikey: apikey, visitors: visitors, limit: checklimit , RequestToday: RequestToday });
     
 });
 
@@ -65,7 +94,7 @@ router.get('/docs',  checkAuth, async (req, res) => {
 router.get("/logout", (req, res) => {
     req.logout(req.user, err => {
       if(err) return next(err);
-      res.redirect("/login");
+      res.redirect("/wiki");
     });
   });
 
