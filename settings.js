@@ -17,7 +17,7 @@ servicesmtp = "Gmail"; //Ada gmail ada sendinblue ikut masing2 limit gmail 500 l
 sendemail = "obasprom252@gmail.com"; //Email SMTP
 fromsendemail = "obasprom252@gmail.com"; // From Email SMTP 
 sendpwmail = "dakwjiuwrqenpooc"; // Password Email SMTP
-domain = "localhost:8080"; // domain website tanpa http or https
+domain = "api.alpha-md.rf.gd"; // domain website tanpa http or https
 
 //_______________________ ┏  Apikey  ┓ _______________________\\
 
