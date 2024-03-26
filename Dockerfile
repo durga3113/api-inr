@@ -1,7 +1,7 @@
 FROM node:slim
 
 RUN apt-get update && \
-    apt-get install -y libxkbcommon0 libgbm1 libatk-bridge2.0-0
+    apt-get install -y libxkbcommon0 libgbm1 libatk-bridge2.0-0 git
 
 WORKDIR /app
 
