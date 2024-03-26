@@ -18,8 +18,8 @@ const logger = pino({ level: "silent" });
 async function connectWhatsApp() {
   const mongoURL = mongodbauth
   const mongoClient = new MongoClient(mongoURL, {
-    useNewUrlParser: true,
-    useUnifiedTopology: true,
+   /* useNewUrlParser: true,
+    useUnifiedTopology: true,*/
   });
   await mongoClient.connect();
 

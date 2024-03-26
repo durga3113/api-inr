@@ -4,6 +4,10 @@ const translate = require('translate-google')
 const database = require("../MongoAuth/shortlinkdb");
 const db = database.get("short-link");
 const logger = require("morgan");
+const { Wattpad } = require("../lib/wattpad");
+const { Anime } = require("../lib/anime");
+const anime = new Anime();
+const wattpad = new Wattpad();
 const cors = require("cors");
 const cookieParser = require("cookie-parser");
 const bodyParser = require("body-parser");
@@ -70,6 +74,13 @@ function makeid(length) {
     }
     return result;
 }
+const resSukses = async (response, text) => {
+    await response.status(200).json({
+        status: true,
+        creator: 'cipher',
+        result: text
+    });
+};
 //―――――――――――――――――――――――――――――――――――――――――― ┏  AI  ┓ ―――――――――――――――――――――――――――――――――――――――――― \\
 router.use(cors());
 router.use(logger('dev'));
@@ -907,7 +918,75 @@ textto.sounds.create({ text: text1, voice: lan })
 
 //―――――――――――――――――――――――――――――――――――――――――― ┏  Search  ┓ ―――――――――――――――――――――――――――――――――――――――――― \\
 
+router.get("/api/search/kusonime", cekKey, async (req, res) => {
+	const query = req.query.query
+	if (!query) return res.json(loghandler.notquery);
+	await anime.kusonime(query).then(result => {
+		if (!result instanceof Object) return res.json(loghandler.error);
+		resSukses(res, result);
+	}).catch(er => {
+		res.json(loghandler.error);
+		console.log(er);
+	});
+});
 
+router.get("/api/search/manga", cekKey, async (req, res) => {
+	const { query } = req.query;
+	if (!query) return res.json(loghandler.notquery);
+	await anime.mangaSearch(query)
+		.then(result => {
+			if (!result instanceof Object) return res.json(loghandler.error);
+			resSukses(res, result);
+		})
+		.catch(er => {
+			res.json(loghandler.error);
+			console.log(er);
+		});
+});
+
+router.get("/api/search/bacawp", cekKey, async (req, res) => {
+	const url = req.query.url;
+	if (!url) return res.json(loghandler.noturl)
+	if (!url.match(/https?:\/\/www\.wattpad\.com\//g)) return res.json({
+		status: true,
+		creator: `${creator}`,
+		error: "invalid url, enter url wattpad correctly"
+	});
+	wattpad.read(url).then(result => {
+		if (!result instanceof Object) return res.json(loghandler.error);
+		resSukses(res, result);
+	}).catch(er => {
+		res.json(loghandler.error);
+		console.log(er);
+	});
+});
+router.get("/api/search/storywp", cekKey, async (req, res) => {
+	const url = req.query.url;
+	if (!url) return res.json(loghandler.noturl)
+	if (!url.match(/wattpad\.com\/story\/(?:[1-9][0-9]+)\-/g)) return res.json({
+		status: false,
+		creator: `${creator}`,
+		error: "invalid url, enter url wattpad correctly"
+	});
+	wattpad.story(url).then(result => {
+		if (!result instanceof Object) return res.json(loghandler.error);
+		resSukses(res, result);
+	}).catch(er => {
+		res.json(loghandler.error);
+		console.log(er);
+	});
+})
+router.get("/api/search/wattpad", cekKey, async (req, res) => {
+	const query = req.query.query;
+	if (!query) return res.json(loghandler.notquery);
+	wattpad.search(query).then(result => {
+		if (!result instanceof Object) return res.json(loghandler.error);
+		resSukses(res, result);
+	}).catch(er => {
+		res.json(loghandler.error);
+		console.log(er);
+	});
+})
 
 router.get('/api/search/linkgroupwa', cekKey, async (req, res, next) => {
 	var text1 = req.query.text
