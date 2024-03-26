@@ -10,7 +10,7 @@
     "lib": "lib"
   },
   "scripts": {
-    "start": "node server.js > output.log",
+    "start": "node server.js",
     "node": "nodemon server.js > output.log"
   },
   "repository": {
@@ -22,7 +22,7 @@
     "bot",
     "whatsaap"
   ],
-  "author": "AlipBot",
+  "author": "Cipher",
   "license": "ISC",
   "bugs": {
     "url": "https://github.com/AlipBot/Api-Alpis/issues"
