@@ -12,7 +12,7 @@ puppeteerpath = '/usr/bin/chromium-browser'
 //___________ ┏  SMTP Setting  ┓ ___________\\
 
 //note service SMTP Gmail Can't Send To Temp Email If you want to use temp email do it in another service
-usetempemail = true; // kalau true boleh sing up pakai email temp kalau pakai service gmail pakai false je
+usetempemail = false; // kalau true boleh sing up pakai email temp kalau pakai service gmail pakai false je
 servicesmtp = "Gmail"; //Ada gmail ada sendinblue ikut masing2 limit gmail 500 limit sendinblue 300 free. List service smtp : https://nodemailer.com/smtp/well-known/
 sendemail = "obasprom252@gmail.com"; //Email SMTP
 fromsendemail = "obasprom252@gmail.com"; // From Email SMTP 
