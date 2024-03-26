@@ -255,7 +255,8 @@ router.get('/get-otp', async (req, res) => {
     } else if (phoneRegex.test(content)) {
         method = 'whatsapp';
     } else {
-        return res.status(400).json({ error: 'Invalid content. Please provide a valid email or phone number.' });
+	req.flash('error_messages', "Invalid content. Please provide a valid email or  whatsap phone number.");
+        return res.redirect('/getotp');
     }
 
     try {
@@ -281,17 +282,17 @@ router.get('/get-otp', async (req, res) => {
 
         if (method === 'email') {
             await sendOTPEmail(content, otp);
-            console.log('OTP sent to email successfully:', content);
         } else if (method === 'whatsapp') {
             const sock = req.app.get('whatsappSock');
-            await sendMessage(sock, content, `Your OTP is: ${otp}`);
-            console.log('OTP sent to WhatsApp successfully:', content);
+       await sendMessage(sock, content, `*ALPHA-API* *VERIFICATION*\n\n
+    Your OTP for verification is: ${otp}\nplease use within 15 minutes of getting this message\n\nmade with ❤️ from Cipher
+`);
         }
 
         return res.redirect('/verify');
     } catch (error) {
-        console.error('Error in getting OTP:', error);
-        return res.status(500).json({ error: 'An error occurred while getting OTP.' });
+       req.flash('error_messages', "Error in getting otp please try another method");
+        return res.redirect('/getotp');
     }
 });
 
