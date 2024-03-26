@@ -42,7 +42,7 @@ function checkAuth(req, res, next) {
 
  function captchaForgotPassword(req, res, next) {
     if (req.recaptcha.error) {
-        req.flash('error_messages','reCAPTCHA Tidak Valid');
+        req.flash('error_messages','reCAPTCHA Invalid');
         res.redirect('/forgot-password');
     } else {
         return next();
@@ -52,7 +52,7 @@ function checkAuth(req, res, next) {
 function captchaResetPassword(req, res, next) {
     const { token } = req.body;
     if (req.recaptcha.error) {
-        req.flash('error_messages','reCAPTCHA Tidak Valid');
+        req.flash('error_messages','reCAPTCHA Invalid');
         res.redirect(`/reset-password?token=${token}`);
     } else {
         return next();
@@ -61,7 +61,7 @@ function captchaResetPassword(req, res, next) {
 
 function captchaRegister(req, res, next) {
     if (req.recaptcha.error) {
-        req.flash('error_messages','reCAPTCHA Tidak Valid');
+        req.flash('error_messages','reCAPTCHA Invalid');
         res.redirect('/signup');
     } else {
         return next();
@@ -70,7 +70,7 @@ function captchaRegister(req, res, next) {
 
  function captchaLogin(req, res, next) {
     if (req.recaptcha.error) {
-        req.flash('error_messages','reCAPTCHA Tidak Valid');
+        req.flash('error_messages','reCAPTCHA Invalid');
         res.redirect('/login');
     } else {
         return next();
@@ -155,16 +155,16 @@ router.post('/signup', recaptcha.middleware.verify, captchaRegister, async (req,
         req.flash('error_messages', "Password Must contain at least one number and one uppercase and lowercase letter, and at least 8 or more characters,no emoji and no Space Limit 30 text");
         return res.redirect('/signup');
     } else if (username.length < 4) {
-        req.flash('error_messages', "Username harus minimal 4 karakter");
+        req.flash('error_messages', "Username must be at least 4 characters");
         return res.redirect('/signup');
     } else if (username.length > 20) {
-        req.flash('error_messages', "Limit Username tidak boleh lebih 20 karakter");
+        req.flash('error_messages', "Username limit cannot be more than 20 characters");
         return res.redirect('/signup');
     } else if (containsEmoji(username)) {
-        req.flash('error_messages', "Username Tidak boleh guna emoji");
+        req.flash('error_messages', "Username Can't use emoji");
         return res.redirect('/signup');
     } else if (!checkemail) {
-        req.flash('error_messages', "Sorry kami terima Account Gmail Sahaja");
+        req.flash('error_messages', "Sorry we only accept Gmail Accounts for now");
         return res.redirect('/signup');
     } else {
         try {
@@ -316,7 +316,7 @@ router.post('/forgot-password', recaptcha.middleware.verify, captchaForgotPasswo
 
 if (userData) {
 if (Cooldown) {
-    req.flash('error_messages','Please Dont Spam Wait After 30 minit after new submit.');
+    req.flash('error_messages','Please Dont Spam Wait After 30 minutes after new submit.');
     res.redirect('/forgot-password')
             
  }else{
@@ -327,7 +327,7 @@ if (Cooldown) {
                 res.redirect('/forgot-password');
             }else{
              await resetToken({ token: token, email: email }).save();
-            req.flash('success_messages','Check your email for more info, wait 30 minit after new submit.');
+            req.flash('success_messages','Check your email for more info, wait 30 minutes after new submit.');
             res.redirect('/forgot-password');    
             }
            
