@@ -89,8 +89,9 @@ router.use(bodyParser.urlencoded({ extended: true }));
 router.use(bodyParser.json());
 router.use(cookieParser());
 
-/*router.get('/api/ai/c-ai', cekKey, async (req, res) => {
-    const characterId = req.query.characterid || 'Uskj6m3pjr0Q-91CQvSzXGJPIfaWvtMwQigp54VnQZw';
+router.get('/api/ai/c-ai', cekKey, async (req, res) => {
+	res.redirect("/docs");
+   /* const characterId = req.query.characterid || 'Uskj6m3pjr0Q-91CQvSzXGJPIfaWvtMwQigp54VnQZw';
     const userMessage = req.query.message || '';
 
     try {
@@ -105,8 +106,8 @@ router.use(cookieParser());
         await limitapikey(req.query.apikey);
     } catch (error) {
         res.status(500).json({ error: 'Failed to get a response from the chatbot.' });
-    }
-});*/
+    }*/
+});
 
 router.get('/api/ai/gpt1', cekKey, async (req, res) => {
     const prompt = req.query.prompt;
