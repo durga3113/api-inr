@@ -31,13 +31,13 @@ const isNumber = require('is-number');
 const User = require('../model/user');
 const dataweb = require('../model/DataWeb');
 const router = express.Router()
-const CharacterAI = require('node_characterai');
+/*const CharacterAI = require('node_characterai');
 const characterAI = new CharacterAI({
     puppeteerExecutablePath: puppeteerpath
 });
 (async () => {
     await characterAI.authenticateWithToken(caitkn);
-})();
+})();*/
 
 async function cekKey(req, res, next) {
 	var apikey = req.query.apikey
@@ -89,7 +89,7 @@ router.use(bodyParser.urlencoded({ extended: true }));
 router.use(bodyParser.json());
 router.use(cookieParser());
 
-router.get('/api/ai/c-ai', cekKey, async (req, res) => {
+/*router.get('/api/ai/c-ai', cekKey, async (req, res) => {
     const characterId = req.query.characterid || 'Uskj6m3pjr0Q-91CQvSzXGJPIfaWvtMwQigp54VnQZw';
     const userMessage = req.query.message || '';
 
@@ -106,7 +106,7 @@ router.get('/api/ai/c-ai', cekKey, async (req, res) => {
     } catch (error) {
         res.status(500).json({ error: 'Failed to get a response from the chatbot.' });
     }
-});
+});*/
 
 router.get('/api/ai/gpt1', cekKey, async (req, res) => {
     const prompt = req.query.prompt;

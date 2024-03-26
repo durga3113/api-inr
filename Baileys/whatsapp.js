@@ -55,7 +55,6 @@ async function connectWhatsApp() {
       });
     }
     if (connection === "connecting") {
-      console.log("Alpha-api");
       console.log("ℹ️ Connecting to WhatsApp... Please Wait.");
     }
     if (connection === "open") {
