@@ -31,13 +31,6 @@ const isNumber = require('is-number');
 const User = require('../model/user');
 const dataweb = require('../model/DataWeb');
 const router = express.Router()
-/*const CharacterAI = require('node_characterai');
-const characterAI = new CharacterAI({
-    puppeteerExecutablePath: puppeteerpath
-});
-(async () => {
-    await characterAI.authenticateWithToken(caitkn);
-})();*/
 
 async function cekKey(req, res, next) {
 	var apikey = req.query.apikey
@@ -49,7 +42,7 @@ async function cekKey(req, res, next) {
 		} else if(!db.isVerified) {
 				return res.json({ status : false, creator : `${creator}`, message : "[!] Please verify email first before using apikey"})  
 			} else if(db.limitApikey === 0) {
-				return res.json({ status : false, creator : `${creator}`, message : "[!] Apikey limit excssded or is Out of Stock"})  
+				return res.json({ status : false, creator : `${creator}`, message : "[!] Apikey limit exceeded or is Out of Stock"})  
 			}else{
         return next();
     }
@@ -90,24 +83,26 @@ router.use(bodyParser.json());
 router.use(cookieParser());
 
 router.get('/api/ai/c-ai', cekKey, async (req, res) => {
-	res.redirect("/docs");
-   /* const characterId = req.query.characterid || 'Uskj6m3pjr0Q-91CQvSzXGJPIfaWvtMwQigp54VnQZw';
-    const userMessage = req.query.message || '';
-
+    const characterId = req.query.characterid;
+    const message = req.query.message;
+    if (!characterId || !message) {
+        return res.status(400).json({ error: 'Character ID and message are required' });
+    }
     try {
-        const chat = await characterAI.createOrContinueChat(characterId);
-        const response = await chat.sendAndAwaitResponse(userMessage, true);
+        const response = await axios.get(`https://endpoint-character-ai-np4s.onrender.com/get-output?characterid=${encodeURIComponent(characterId)}&message=${encodeURIComponent(message)}`);
         const result = {
-            response: response.text,
-            creator: 'cipher',
-            status: true
+	    creator: 'cipher',
+            response: response.data.response,
+	    characterId: characterId,
         };
         res.json({ result });
         await limitapikey(req.query.apikey);
     } catch (error) {
-        res.status(500).json({ error: 'Failed to get a response from the chatbot.' });
-    }*/
+        console.error(error);
+        res.status(500).json({ error: 'Internal Server Error' });
+    }
 });
+
 
 router.get('/api/ai/gpt1', cekKey, async (req, res) => {
     const prompt = req.query.prompt;
