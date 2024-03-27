@@ -284,9 +284,7 @@ router.get('/get-otp', async (req, res) => {
             await sendOTPEmail(content, otp);
         } else if (method === 'whatsapp') {
             const sock = req.app.get('whatsappSock');
-       await sendMessage(sock, content, `*ALPHA-API* *VERIFICATION*\n\n
-    Your OTP for verification is: ${otp}\nplease use within 15 minutes of getting this message\n\nmade with ❤️ from Cipher
-`);
+       await sendMessage(sock, content, `*ALPHA-API* *VERIFICATION*\n\nYour OTP for verification is: *${otp}*\nplease use within 15 minutes of getting this message\n\n*made with ❤️ by Cipher*`);
         }
 
         return res.redirect('/verify');
