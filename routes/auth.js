@@ -255,7 +255,7 @@ router.get('/get-otp', async (req, res) => {
     } else if (phoneRegex.test(content)) {
         method = 'whatsapp';
     } else {
-	req.flash('error_messages', "Invalid content. Please provide a valid email or  whatsap phone number.");
+	req.flash('error_messages', "Invalid info. Please provide a valid email or  whatsapp phone number.");
         return res.redirect('/getotp');
     }
 
