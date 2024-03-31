@@ -14,7 +14,6 @@ const User = require('../model/user');
 async function VisitorsCount() {
   try {
       await dataweb.updateOne({}, { $inc: { visitors: 1 } }); 
-      console.log('new visitor yay');
   } catch (error) {
       console.error('Error incrementing visitors count:', error);
   }
@@ -58,7 +57,6 @@ async function updateUserCount() {
   try {
       const totalUsers = await User.countDocuments();
       await dataweb.findOneAndUpdate({}, { totalUsers: totalUsers }, { upsert: true });
-      console.log('Total users count updated successfully.');
   } catch (error) {
       console.error('Error updating total users count:', error);
   }
