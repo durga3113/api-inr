@@ -5,6 +5,7 @@ const database = require("../MongoAuth/shortlinkdb");
 const db = database.get("short-link");
 const logger = require("morgan");
 const { Wattpad } = require("../lib/wattpad");
+const maths = require('../lib/maths');
 const { Anime } = require("../lib/anime");
 const anime = new Anime();
 const wattpad = new Wattpad();
@@ -81,6 +82,26 @@ router.use(express.json());
 router.use(bodyParser.urlencoded({ extended: true }));
 router.use(bodyParser.json());
 router.use(cookieParser());
+
+
+
+
+//=================================================QUIZ===========================================================
+
+router.get('/api/quiz/maths', (req, res) => {
+    const difficulty = req.query.difficulty || req.body.difficulty;
+
+    if (!difficulty) {
+        return res.status(400).json({ error: 'Difficulty parameter missing' });
+    }
+
+    const question = maths.generateQuestion(difficulty);
+    res.json(question);
+});
+
+//===============================================================================================================
+
+
 
 router.get('/api/ai/c-ai', cekKey, async (req, res) => {
     const characterId = req.query.characterid;
