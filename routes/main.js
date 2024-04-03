@@ -9,7 +9,6 @@ const apiRoutes = require('./api')
 const dataweb = require('../model/DataWeb');
 const User = require('../model/user');
 
-//_______________________ ┏ Function ┓ _______________________\\
 
 async function VisitorsCount() {
   try {
