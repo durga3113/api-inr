@@ -1,6 +1,5 @@
 require('../settings')
 const express = require('express')
-const anime = require('z-anime');
 const translate = require('translate-google')
 const logger = require("morgan");
 const {
