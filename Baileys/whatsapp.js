@@ -7,7 +7,6 @@ const Jimp = require("jimp");
 const fs = require("fs");
 const {
   DisconnectReason,
-  useMultiFileAuthState,
 } = require("@whiskeysockets/baileys");
 const useMongoDBAuthState = require("../MongoAuth/MongoAuth");
 const makeWASocket = require("@whiskeysockets/baileys").default;
@@ -16,7 +15,7 @@ const { MongoClient } = require("mongodb");
 const logger = pino({ level: "silent" });
 
 async function connectWhatsApp() {
-  const mongoURL = mongodbauth
+  const mongoURL = keymongodb
   const mongoClient = new MongoClient(mongoURL, {
    /* useNewUrlParser: true,
     useUnifiedTopology: true,*/
