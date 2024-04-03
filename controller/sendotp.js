@@ -14,7 +14,13 @@ async function sendOTPEmail(email, otp) {
         from: 'your-email@gmail.com',
         to: email,
         subject: 'Your OTP for Registration',
-        text: `Your OTP for registration is: ${otp}. Please use this OTP to complete your registration process.`
+        html: `
+        <html>
+            <body>
+                <p>Your OTP for registration is: <strong>${otp}</strong>. Please use this OTP to complete your registration process.</p>
+            </body>
+        </html>
+    `
     };
 
     try {
@@ -31,8 +37,13 @@ async function sendReset(email, otp) {
         from: 'your-email@gmail.com',
         to: email,
         subject: 'Your OTP for Password Reset',
-        text: `Your OTP for Password Reset is: ${otp}. Please use this OTP to complete your registration process.`
-    };
+        html: `
+        <html>
+            <body>
+                <p>Your OTP for password reset is: <strong>${otp}</strong>. Please use this OTP to complete your registration process.</p>
+            </body>
+        </html>
+    ` };
 
     try {
         await transporter.sendMail(mailOptions);
@@ -43,4 +54,7 @@ async function sendReset(email, otp) {
     }
 }
 
-module.exports = { sendOTPEmail, sendReset };
+module.exports = {
+    sendOTPEmail,
+    sendReset
+};
