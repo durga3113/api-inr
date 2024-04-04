@@ -127,22 +127,23 @@ router.get('/api/info/apikey', async (req, res) => {
     try {
         const apiKey = req.query.apikey;
         if (!apiKey) {
-            return res.status(400).json({
+            return res.json({
                 status: false,
                 creator: `${creator}`,
                 error: 'API Key is required'
             });
         }
+        const websiteData = await dataweb.findOne();
         const user = await User.findOne({ apikey: apiKey });
         if (!user) {
-            return res.status(401).json({
+            return res.json({
                 status: false,
                 creator: `${creator}`,
                 error: 'Unauthorized: Invalid API Key'
             });
         }
         if (user.isPrivate) {
-            return res.status(403).json({
+            return res.json({
                 status: false,
                 creator: `${creator}`,
                 error: 'Forbidden: Account is private'
@@ -156,7 +157,12 @@ router.get('/api/info/apikey', async (req, res) => {
             phoneNumber: user.phoneNumber,
             isVerified: user.isVerified,
             apikey: user.apikey,
-            limitApikey: user.limitApikey
+            limitRem: `${LimitApikey}`,
+            limitApikey: user.limitApikey,
+            totalUsers: websiteData.totalUsers,
+            totalRequests: websiteData.totalRequests,
+            visitors: websiteData.visitors,
+            requestToday: websiteData.requestToday
         };
         res.json(userData);
     } catch (error) {
