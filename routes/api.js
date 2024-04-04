@@ -122,11 +122,52 @@ router.use(bodyParser.urlencoded({
 router.use(bodyParser.json());
 router.use(cookieParser());
 
-
-
-
-
-
+//================================================================================================================
+router.get('/api/info/apikey', async (req, res) => {
+    try {
+        const apiKey = req.query.apikey;
+        if (!apiKey) {
+            return res.status(400).json({
+                status: false,
+                creator: `${creator}`,
+                error: 'API Key is required'
+            });
+        }
+        const user = await User.findOne({ apikey: apiKey });
+        if (!user) {
+            return res.status(401).json({
+                status: false,
+                creator: `${creator}`,
+                error: 'Unauthorized: Invalid API Key'
+            });
+        }
+        if (user.isPrivate) {
+            return res.status(403).json({
+                status: false,
+                creator: `${creator}`,
+                error: 'Forbidden: Account is private'
+            });
+        }
+        const userData = {
+            status: true,
+            creator: `${creator}`,
+            username: user.username,
+            email: user.email,
+            phoneNumber: user.phoneNumber,
+            isVerified: user.isVerified,
+            apikey: user.apikey,
+            limitApikey: user.limitApikey
+        };
+        res.json(userData);
+    } catch (error) {
+        console.error(error);
+        res.status(500).json({
+            status: false,
+            creator: `${creator}`,
+            error: 'Internal Server Error'
+        });
+    }
+});
 //===============================================================================================================
 router.get('/api/search/lyrics', cekKey, async (req, res) => {
     const id = req.query.id;
