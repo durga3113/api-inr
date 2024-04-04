@@ -95,6 +95,61 @@ router.get("/logout", (req, res) => {
     });
   });
 
+router.get('/admin/get_update', async (req, res) => {
+  try {
+    const jsonResponse = {
+      status: true,
+      creator: 'Cipher',
+      data: {
+        key: 'Cipher',
+        message: {
+          text: '*Api info:* https://api.alpha-md.rf.gd/docs\n*contact*: +2348114860536',
+          contextInfo: {
+            externalAdReply: {
+              sourceUrl: 'https://chat.whatsapp.com/FCfSLTySyqz1c7YPJD2KSm',
+              title: 'join our WhatsApp Group for updates!!'
+            }
+          }
+        }
+      }
+    };
+    res.json(jsonResponse);
+  } catch (error) {
+    console.error(error);
+    res.status(500).json({ status: false, error: 'Internal Server Error' });
+  }
+});
+const responseData = {
+  "status": true,
+  "creator": "cipher",
+  "data": [
+    "918113921898",
+    "917034892686"
+  ]
+};
+
+const responseData2 = {
+  "status": true,
+  "creator": "Cipher",
+  "data": ""
+};
+router.get('/admin/get_block', (req, res) => {
+  const key = req.query.key;
+  if (key === 'alpha') {
+    res.json(responseData);
+  } else {
+    res.status(403).json({ error: 'Invalid key' });
+  }
+});
+router.get('/admin/get_start_msg', (req, res) => {
+  const key = req.query.key;
+  if (key === 'alpha') {
+    res.json(responseData2);
+  } else {
+    res.status(403).json({ error: 'Invalid key' });
+  }
+});
+
 
 
 router.use(authRoutes);
