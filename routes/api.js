@@ -146,7 +146,11 @@ router.get('/api/info/apikey', async (req, res) => {
             return res.json({
                 status: false,
                 creator: `${creator}`,
-                error: 'Forbidden: Account is private'
+                error: 'Forbidden: Account is private',
+		totalUsers: websiteData.totalUsers,
+                totalRequests: websiteData.totalRequests,
+                visitors: websiteData.visitors,
+                requestToday: websiteData.RequestToday
             });
         }
         const userData = {
