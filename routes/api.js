@@ -157,12 +157,12 @@ router.get('/api/info/apikey', async (req, res) => {
             phoneNumber: user.phoneNumber,
             isVerified: user.isVerified,
             apikey: user.apikey,
-            limitRem: `${LimitApikey}`,
-            limitApikey: user.limitApikey,
+            limitApikey: `${LimitApikey}`,
+            limitRem: user.limitApikey,
             totalUsers: websiteData.totalUsers,
             totalRequests: websiteData.totalRequests,
             visitors: websiteData.visitors,
-            requestToday: websiteData.requestToday
+            requestToday: websiteData.RequestToday
         };
         res.json(userData);
     } catch (error) {
