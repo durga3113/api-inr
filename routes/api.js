@@ -202,7 +202,7 @@ const fetchVideoInfo = async function (url) {
   return response;
 };
 
-router.get('/api/dowloader/pintrest', cekKey, async (req, res, next) => {
+router.get('/api/dowloader/pinterest', cekKey, async (req, res, next) => {
   try {
     const url = req.query.url;
     if (!url) {
