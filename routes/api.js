@@ -12,6 +12,7 @@ const wattpad = new Wattpad();
 const cors = require("cors");
 const cookieParser = require("cookie-parser");
 const bodyParser = require("body-parser");
+const cheerio = require('cheerio');
 const axios = require('axios');
 const pinsch = require('../lib/pinsch.js')
 const {
@@ -179,6 +180,43 @@ router.get('/api/info/apikey', async (req, res) => {
     }
 });
 //===============================================================================================================
+const fetchVideoInfo = async function (url) {
+  const res = await axios({
+    method: 'POST',
+    url: 'https://www.expertsphp.com/facebook-video-downloader.php',
+    data: new URLSearchParams(Object.entries({ url })),
+    headers: {
+      'user-agent':
+        'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/98.0.4758.102 Safari/537.36',
+    },
+  });
+  const $ = cheerio.load(res.data);
+  const response = {};
+  response.status = true;
+  response.creator = 'cipher';
+  response.result =
+    $('tbody > tr').eq(0).find('a').attr('href') ||
+    $('#showdata > div.col-sm-12 > video > source').attr('src') ||
+    $('#showdata > div.col-sm-12 > img').attr('src');
+  if (!response.result) throw new Error(`Invalid URL!`);
+  return response;
+};
+
+router.get('/api/dowloader/pintrest', cekKey, async (req, res, next) => {
+  try {
+    const url = req.query.url;
+    if (!url) {
+      throw new Error('URL parameter is missing');
+    }
+    const videoInfo = await fetchVideoInfo(url);
+    await limitapikey(req.query.apikey);
+    res.json(videoInfo);
+  } catch (error) {
+    res.json({ error: error.message });
+  }
+});
+
+//=================================================================================================================
 router.get('/api/search/lyrics', cekKey, async (req, res) => {
     const id = req.query.id;
 
