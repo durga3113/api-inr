@@ -44,6 +44,7 @@ const {
 } = require('../lib/myfunc')
 const Canvacord = require("canvacord");
 const isNumber = require('is-number');
+const { download, search } = require('aptoide-scraper');
 const YouVersion = require('@glowstudent/youversion');
 const { bookAliases, versions } = require('../lib/bible');
 const User = require('../model/user');
@@ -124,6 +125,54 @@ router.use(bodyParser.json());
 router.use(cookieParser());
 
 //================================================================================================================
+router.get('/api/dowloader/apk', cekKey, async (req, res) => {
+    try {
+        if (!queryText) {
+            return res.json(
+                {
+                    status: false,
+                    creator: `${creator}`,
+                    result: 'Text query parameter is required'
+                });
+        }
+
+        let data = await download(queryText);
+        limitapikey(req.query.apikey)
+        res.json({
+            status: true,
+            creator: `${creator}`,
+            result: data
+        });
+    } catch (error) {
+        res.json(loghandler.error);
+    }
+});
+
+
+router.get('/api/search/apk', cekKey, async (req, res) => {
+    try {
+        const queryText = req.query.text; 
+        if (!queryText) {
+            return res.json(
+                {
+                    status: false,
+                    creator: `${creator}`,
+                    result: 'Text query parameter is required'
+                });
+        }
+
+        let data = await search(queryText);
+        limitapikey(req.query.apikey)
+        res.json({
+            status: true,
+            creator: `${creator}`,
+            result: data
+        });
+    } catch (error) {
+        res.json(loghandler.error);
+    }
+});
+//--------------------------------------------------------------------------------------------------------------------
 router.get('/api/info/apikey', async (req, res) => {
     try {
         const apiKey = req.query.apikey;
