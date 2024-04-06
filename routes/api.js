@@ -126,6 +126,7 @@ router.use(cookieParser());
 
 //================================================================================================================
 router.get('/api/dowloader/apk', cekKey, async (req, res) => {
+	const queryText = req.query.text; 
     try {
         if (!queryText) {
             return res.json(
