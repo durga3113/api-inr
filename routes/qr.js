@@ -114,7 +114,7 @@ router.get("/api/session/create", async (req, res) => {
             console.log("connection closed");
           });
           await removeFile("auth_info_baileys");
-          process.exit(1);
+          return;
         }
         session.ev.on("creds.update", saveCreds);
         if (
@@ -129,7 +129,7 @@ router.get("/api/session/create", async (req, res) => {
     } catch (err) {
       // console.log(err);
       await removeFile("auth_info_baileys");
-      process.exit(1);
+      return;
     }
   }
   await Getqr();
