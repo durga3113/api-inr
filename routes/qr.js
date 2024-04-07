@@ -122,6 +122,9 @@ router.get("/api/session/create", async (req, res) => {
 router.get("/api/session/restore", async (req, res) => {
   const { storedb } = require("../lib/scan/db");
   let id = req.query.id;
+  if (!id) {
+    return res.json({ error: "No id provided in the query string" });
+  }
   try {
     const v = await storedb.find({ id: id });
     if (v[0]) {
