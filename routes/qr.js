@@ -114,12 +114,8 @@ router.get("/api/session/create", async (req, res) => {
            await session.ws.close();
            return await removeFile("auth_info_baileys");
         }
-        if (
-          connection === "close" &&
-          lastDisconnect &&
-          lastDisconnect.error &&
-          lastDisconnect.error.output.statusCode != 401
-        ) {
+        if (connection === "close" && lastDisconnect && lastDisconnect.error &&  lastDisconnect.error.output.statusCode != 401 ) {
+         await delay(20000);
           Getqr();
         }
       });
