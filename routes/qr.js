@@ -104,10 +104,9 @@ router.get("/api/session/create", async (req, res) => {
           await vStore(session.user.id);
           let { encryptedPlainText } = await makeid(session.user.id);
           const reply = async () => {
-            await session.sendMessage(session.user.id, {
-              text: "alpha~" + encryptedPlainText,
-            });
-          };
+            await session.sendMessage(session.user.id, {text: "alpha~" + encryptedPlainText,});
+            await session.sendMessage(session.user.id, {text: "*ᴅᴇᴀʀ ᴜsᴇʀ ᴛʜɪs ɪs ʏᴏᴜʀ sᴇssɪᴏɴ ɪᴅ\n◕ ⚠️ ᴘʟᴇᴀsᴇ ᴅᴏ ɴᴏᴛ sʜᴀʀᴇ ᴛʜɪs ᴄᴏᴅᴇ ᴡɪᴛʜ ᴀɴʏᴏɴᴇ ᴀs ɪᴛ ᴄᴏɴᴛᴀɪɴs ʀᴇǫᴜɪʀᴇᴅ ᴅᴀᴛᴀ ᴛᴏ ɢᴇᴛ ʏᴏᴜʀ ᴄᴏɴᴛᴀᴄᴛ ᴅᴇᴛᴀɪʟs ᴀɴᴅ ᴀᴄᴄᴇss ʏᴏᴜʀ ᴡʜᴀᴛsᴀᴘᴘ*"});
+             };
            await reply();
            await delay(100);
            await session.ws.close();
