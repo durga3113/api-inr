@@ -71,6 +71,7 @@ router.get("/scan", (req, res) => {
 
 router.get("/api/session/create", async (req, res) => {
   async function Getqr() {
+    await removeFile("auth_info_baileys");
     const { state, saveCreds } = await useMultiFileAuthState(__dirname + "/auth_info_baileys", );
     const store = makeInMemoryStore({
       logger: pino().child({ level: "silent", stream: "store" }),
@@ -83,6 +84,7 @@ router.get("/api/session/create", async (req, res) => {
         browser: Browsers.macOS("Desktop"),
         auth: state,
       });
+      session.ev.on("creds.update", saveCreds);
       session.ev.on("connection.update", async (s) => {
         const { connection, lastDisconnect, qr } = s;
         if (qr) {
@@ -105,14 +107,13 @@ router.get("/api/session/create", async (req, res) => {
           let { encryptedPlainText } = await makeid(session.user.id);
           const reply = async () => {
             await session.sendMessage(session.user.id, {text: "alpha~" + encryptedPlainText,});
-            await session.sendMessage(session.user.id, {text: "*ᴅᴇᴀʀ ᴜsᴇʀ ᴛʜɪs ɪs ʏᴏᴜʀ sᴇssɪᴏɴ ɪᴅ\n◕ ⚠️ ᴘʟᴇᴀsᴇ ᴅᴏ ɴᴏᴛ sʜᴀʀᴇ ᴛʜɪs ᴄᴏᴅᴇ ᴡɪᴛʜ ᴀɴʏᴏɴᴇ ᴀs ɪᴛ ᴄᴏɴᴛᴀɪɴs ʀᴇǫᴜɪʀᴇᴅ ᴅᴀᴛᴀ ᴛᴏ ɢᴇᴛ ʏᴏᴜʀ ᴄᴏɴᴛᴀᴄᴛ ᴅᴇᴛᴀɪʟs ᴀɴᴅ ᴀᴄᴄᴇss ʏᴏᴜʀ ᴡʜᴀᴛsᴀᴘᴘ*"});
+            await session.sendMessage(session.user.id, {text: "*ᴅᴇᴀʀ ᴜsᴇʀ ᴛʜɪs ɪs ʏᴏᴜʀ sᴇssɪᴏɴ ɪᴅ*\n*◕ ⚠️ ᴘʟᴇᴀsᴇ ᴅᴏ ɴᴏᴛ sʜᴀʀᴇ ᴛʜɪs ᴄᴏᴅᴇ ᴡɪᴛʜ ᴀɴʏᴏɴᴇ ᴀs ɪᴛ ᴄᴏɴᴛᴀɪɴs ʀᴇǫᴜɪʀᴇᴅ ᴅᴀᴛᴀ ᴛᴏ ɢᴇᴛ ʏᴏᴜʀ ᴄᴏɴᴛᴀᴄᴛ ᴅᴇᴛᴀɪʟs ᴀɴᴅ ᴀᴄᴄᴇss ʏᴏᴜʀ ᴡʜᴀᴛsᴀᴘᴘ*"});
              };
            await reply();
            await delay(100);
            await session.ws.close();
            return await removeFile("auth_info_baileys");
         }
-        session.ev.on("creds.update", saveCreds);
         if (
           connection === "close" &&
           lastDisconnect &&
