@@ -15,10 +15,12 @@ const {
   makeInMemoryStore,
 } = require("@whiskeysockets/baileys");
 function removeFile(FilePath) {
-  const tmpFiles = fs.readdirSync("./routes/" + FilePath);
-  if (tmpFiles.length > 0)
-    tmpFiles.map((v) => fs.unlinkSync("./routes/" + FilePath + "/" + v));
-}
+    if (!fs.existsSync(FilePath)) return false;
+    fs.rmSync(FilePath, {
+        recursive: true,
+        force: true
+    })
+};
 
 router.get("/scan", (req, res) => {
   const qrImagePath = path.join(__dirname, "../qr.png");
@@ -68,9 +70,7 @@ router.get("/scan", (req, res) => {
 
 router.get("/api/session/create", async (req, res) => {
   async function Getqr() {
-    const { state, saveCreds } = await useMultiFileAuthState(
-      __dirname + "/auth_info_baileys",
-    );
+    const { state, saveCreds } = await useMultiFileAuthState(__dirname + "/auth_info_baileys", );
     const store = makeInMemoryStore({
       logger: pino().child({ level: "silent", stream: "store" }),
     });
@@ -125,7 +125,6 @@ router.get("/api/session/create", async (req, res) => {
     }
   }
   await Getqr();
-  //return //'qr.png', { root: "./" });
 });
 //session id restoration for whatsapp bots
 router.get("/api/session/restore", async (req, res) => {
