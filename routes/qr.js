@@ -1,18 +1,24 @@
-require('../settings');
-const QRCode = require('qrcode');
-const express = require('express');
-const path = require('path');
+require("../settings");
+const QRCode = require("qrcode");
+const express = require("express");
+const path = require("path");
 const router = express.Router();
 const fs = require("fs");
-const path = require("path");
-const {makeid, vStore} = require('../lib/scan/Function');
-const mongoose = require('mongoose')
+const { makeid, vStore } = require("../lib/scan/Function");
+const mongoose = require("mongoose");
 const pino = require("pino");
-const { default: makeWASocket, useMultiFileAuthState, Browsers, delay, makeInMemoryStore, } = require("@whiskeysockets/baileys");
-function removeFile(FilePath){
-const tmpFiles = fs.readdirSync('./routes/'+FilePath)
-         if(tmpFiles.length > 0) tmpFiles.map(v => fs.unlinkSync('./routes/'+FilePath+'/'+v))
-      };
+const {
+  default: makeWASocket,
+  useMultiFileAuthState,
+  Browsers,
+  delay,
+  makeInMemoryStore,
+} = require("@whiskeysockets/baileys");
+function removeFile(FilePath) {
+  const tmpFiles = fs.readdirSync("./routes/" + FilePath);
+  if (tmpFiles.length > 0)
+    tmpFiles.map((v) => fs.unlinkSync("./routes/" + FilePath + "/" + v));
+}
 
 router.get("/scan", (req, res) => {
   const qrImagePath = path.join(__dirname, "../qr.png");
@@ -60,100 +66,120 @@ router.get("/scan", (req, res) => {
 
 //qrgeneration for whatsapp bot
 
-router.get('/api/session/create', async (req, res) => {
-console.log(mongoose.connection.readyState);
-mongoose.connect(keymongodb2)
- .then(() => console.log('Connected!'))
-async function Getqr() {
-  const { state, saveCreds } = await useMultiFileAuthState(__dirname + '/auth_info_baileys')
-  const store = makeInMemoryStore({ logger: pino().child({ level: 'silent', stream: 'store' }) })
-  try {
-    let qrSent = false;
-    let session = makeWASocket({
-      printQRInTerminal: false,
-      logger: pino({ level: "silent" }),
-      browser: Browsers.macOS("Desktop"),
-      auth: state
+router.get("/api/session/create", async (req, res) => {
+  console.log(mongoose.connection.readyState);
+  mongoose.connect(keymongodb2).then(() => console.log("Connected!"));
+  async function Getqr() {
+    const { state, saveCreds } = await useMultiFileAuthState(
+      __dirname + "/auth_info_baileys",
+    );
+    const store = makeInMemoryStore({
+      logger: pino().child({ level: "silent", stream: "store" }),
     });
-    session.ev.on("connection.update", async (s) => {
-      const { connection, lastDisconnect, qr } = s;
-      if(qr){
-    await QRCode.toFile('./routes/qr.png', qr, {
-    errorCorrectionLevel : "H",
-    width : 1200,
-    color: {
-    dark: '#000000', 
-    light: '#FFFFFF'
-           }
-        });
-        if (!res.headersSent) {
-      await res.sendFile("/routes/qr.png", {root:"."});
-      qrSent = true;
+    try {
+      let qrSent = false;
+      let session = makeWASocket({
+        printQRInTerminal: false,
+        logger: pino({ level: "silent" }),
+        browser: Browsers.macOS("Desktop"),
+        auth: state,
+      });
+      session.ev.on("connection.update", async (s) => {
+        const { connection, lastDisconnect, qr } = s;
+        if (qr) {
+          await QRCode.toFile("./routes/qr.png", qr, {
+            errorCorrectionLevel: "H",
+            width: 1200,
+            color: {
+              dark: "#000000",
+              light: "#FFFFFF",
+            },
+          });
+          if (!res.headersSent) {
+            await res.sendFile("/routes/qr.png", { root: "." });
+            qrSent = true;
+          }
+        }
+        if (connection == "open") {
+          await delay(500);
+          await vStore(session.user.id);
+          let { encryptedPlainText } = await makeid(session.user.id);
+          const reply = async () => {
+            await session.sendMessage(session.user.id, {
+              text: "alpha~" + encryptedPlainText,
+            });
+          };
+          await reply();
+          await mongoose.connection.close(function () {
+            console.log("connection closed");
+          });
+          await removeFile("auth_info_baileys");
+          process.exit(1);
+        }
+        session.ev.on("creds.update", saveCreds);
+        if (
+          connection === "close" &&
+          lastDisconnect &&
+          lastDisconnect.error &&
+          lastDisconnect.error.output.statusCode != 401
+        ) {
+          Getqr();
+        }
+      });
+    } catch (err) {
+      // console.log(err);
+      await removeFile("auth_info_baileys");
+      process.exit(1);
     }
-      }
-      if (connection == "open") {
-        await delay(500);
-        await vStore(session.user.id);
-        let {encryptedPlainText} = await makeid(session.user.id);
-  const reply = async () => { 
-     await session.sendMessage(session.user.id, {text:'alpha~'+encryptedPlainText})
   }
-    await reply();
-    await mongoose.connection.close(function(){console.log("test")})
-    await removeFile("auth_info_baileys");
-    process.exit(1)
-      }
-      session.ev.on('creds.update', saveCreds)
-      if (
-        connection === "close" &&
-        lastDisconnect &&
-        lastDisconnect.error &&
-        lastDisconnect.error.output.statusCode != 401
-      ) {
-        Getqr();
-      }
-    });
-  } catch (err) {
-    // console.log(err);
-    await removeFile("auth_info_baileys");
-    process.exit(1)
-  }
-}
-await Getqr()
-//return //'qr.png', { root: "./" });
+  await Getqr();
+  //return //'qr.png', { root: "./" });
 });
 //session id restoration for whatsapp bots
-router.get('/api/session/restore', async (req, res) => {
-    mongoose.connect(keymongdb2)
-     .then(() => console.log('Connected!'))
-    const {storedb} = require('../lib/scan/db');
-    let id = req.query.id
-    await storedb.find({id:id}).then(async(v)=>{
-    if(v[0]){
-          await res.json({
-            status: true,
-            creator: `${creator}`,
-            result: v
-                    })
-            } else {
-          await res.json({
-            status: false,
-            creator: `${creator}`,
-            result: "no data for your session"
-                })
-    setTimeout(()=>{
-    return mongoose.connection.close(function(){console.log("test")});
+router.get("/api/session/restore", async (req, res) => {
+  let isConnected = false;
+  if (!isConnected) {
+    try {
+      console.log(mongoose.connection.readyState);
+      await mongoose.connect(keymongodb2);
+      console.log("Connected!");
+      isConnected = true;
+    } catch (err) {
+      return res.status(500).json({ message: "Error connecting to database" });
+    }
+  }
+  const { storedb } = require("../lib/scan/db");
+  let id = req.query.id;
+  try {
+    const v = await storedb.find({ id: id });
+    if (v[0]) {
+      return res.json({
+        status: true,
+        creator: `${creator}`,
+        result: v,
+      });
+    } else {
+      return res.json({
+        status: false,
+        creator: `${creator}`,
+        result: "no data for your session",
+      });
+    }
+  } catch (error) {
+    return res
+      .status(500)
+      .json({ message: "Error retrieving data from database" });
+  } finally {
+    setTimeout(() => {
+      mongoose.connection.close(function () {
+        console.log("connection closed");
+      });
     }, 4500);
-               }
-         })
-    })
+  }
+});
 
-
-
-
-
-
-
-
+router.get("/session/scan", (req, res) => {
+  res.render("getqr");
+});
 
 module.exports = router;

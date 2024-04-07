@@ -1,0 +1,183 @@
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <script async src="https://pagead2.googlesyndication.com/pagead/jsbygoogle.js?client=ca-pub-8736240299050572" crossorigin="anonymous"></script>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link rel="icon" type="image/png" sizes="32x32" href="https://i.ibb.co/9nTWh6B/20230827-181947.png">
+    <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@400;700&display=swap" rel="stylesheet">
+    <title>ALPHA MD QR</title>
+    <style>
+        body {
+            margin: 0;
+            padding: 0;
+            font-family: 'Outfit', sans-serif;
+            background: rgb(207, 206, 206);
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            height: 100vh;
+        }
+
+        .loading-container {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: white; /* Opaque white background */
+            z-index: 9999;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+        }
+
+        .loader {
+            border: 4px solid #f3f3f3;
+            border-top: 4px solid #ff7f00;
+            border-radius: 50%;
+            width: 40px;
+            height: 40px;
+            animation: spin 2s linear infinite;
+        }
+
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+
+        .bg {
+            width: 100%;
+            height: 100vh;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            background-size: 400% 400%;
+            animation: AnimateBG 25s ease infinite;
+        }
+
+        @keyframes AnimateBG {
+            0% { background-position: 0% 50% }
+            50% { background-position: 100% 50% }
+            100% { background-position: 0% 50% }
+        }
+
+        .code {
+            overflow: hidden;
+            background-size: 400% 400%;
+            animation: gradient 8s ease infinite;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            flex-direction: column;
+            font-family: 'Montserrat', sans-serif;
+            height: 100vh;
+            margin: 0;
+        }
+
+        p.legend {
+            color: hsl(220, 15%, 55%);
+            font-size: 1em;
+            font-weight: 400;
+            padding: 0.1em 1.1em;
+            margin-top: 0.1em;
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        :root {
+            --main-color: hsl(212, 45%, 89%);
+            --principalText-color: hsl(218, 44%, 22%);
+            --secondText-color: hsl(220, 15%, 55%);
+        }
+
+        #content {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            text-align: center;
+            background-color: white;
+            padding: 1rem;
+            border-radius: 14px;
+        }
+
+        #qr-image {
+            border-radius: 10px;
+            width: 20rem;
+        }
+
+        #title-container {
+            padding: 1rem 0 0 0;
+            color: var(--principalText-color); /* Use CSS variable for text color */
+            font-weight: 700;
+            margin-bottom: 1rem;
+        }
+
+        #description-container {
+            padding: 0 2.5rem 0 2.5rem;
+            color: var(--principalText-color); /* Use CSS variable for text color */
+            margin-bottom: 2rem;
+        }
+
+        #p-legend {
+            color: var(--principalText-color); /* Use CSS variable for text color */
+            font-size: 1em;
+            font-weight: 400;
+            padding: 0.1em 1.1em;
+            margin-top: 0.1em;
+        }
+    </style>
+    <script>
+        var timeleft = 30;
+        var downloadTimer = setInterval(function() {
+            if (timeleft <= 0) {
+                clearInterval(downloadTimer);
+                document.getElementById("progressBar").remove();
+                document.getElementById("main").innerHTML = "QR Expired! Please reload";
+                document.getElementById("legend").innerHTML = "";
+            }
+            document.getElementById("progressBar").value = 30 - timeleft;
+            timeleft -= 1;
+        }, 1000);
+    </script>
+</head>
+<body>
+    <div class="loading-container">
+        <div class="loader"></div>
+    </div>
+    <div class="bg">
+        <div id="content">
+            <div id="QR-content">
+                <img id="qr-image" src="/api/session/create" alt="QR code">
+            </div>
+            <div id="title-container">
+                <h2 id="main">ALPHA MD QR SCANNER</h2>
+                <p class="legend" id="legend">Refresh this page to get QR code</p>
+            </div>
+        </div>
+    </div>
+    <script>
+        window.addEventListener('load', function () {
+            var loadingContainer = document.querySelector('.loading-container');
+            loadingContainer.style.display = 'none';
+        });
+    
+        var timeleft = 30;
+        var downloadTimer = setInterval(function() {
+            if (timeleft <= 0) {
+                clearInterval(downloadTimer);
+                document.getElementById("progressBar").remove();
+                document.getElementById("main").innerHTML = "QR Expired! Please reload";
+                document.getElementById("legend").innerHTML = "";
+            }
+            document.getElementById("progressBar").value = 30 - timeleft;
+            timeleft -= 1;
+        }, 1000);
+    </script>
+</body>
+</html>

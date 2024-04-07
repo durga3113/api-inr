@@ -3,16 +3,19 @@ creator = "Cipher"; // Name
 port = 8890; //port host
 LimitApikey = 10; // Limit Apikey default
 Limitpremium = 9999; //premium limit default
-keymongodb = "mongodb+srv://api:api@api.pldyojn.mongodb.net/?retryWrites=true&w=majority&appName=api"; //example "mongodb+srv://user:password@name_database.mongodb.net/?retryWrites=true&w=majority";
-flush = false //clear database of all existing whatsapp session
-waifutkn = 'MTA5OTY2ODEyNzYwMTY1NTg0OQ--.MTcxMjExMzYxMA--.8d0bfec177b3'
+keymongodb =
+  "mongodb+srv://uploader2:uploader2@uploader2.uhnmx1u.mongodb.net/?retryWrites=true&w=majority&appName=uploader2"; //example "mongodb+srv://user:password@name_database.mongodb.net/?retryWrites=true&w=majority";
+keymongodb2 =
+  "mongodb+srv://uploader2:uploader2@uploader2.uhnmx1u.mongodb.net/?retryWrites=true&w=majority&appName=uploader2";
+flush = false; //clear database of all existing whatsapp session
+waifutkn = "MTA5OTY2ODEyNzYwMTY1NTg0OQ--.MTcxMjExMzYxMA--.8d0bfec177b3";
 //___________ ┏  SMTP Setting  ┓ ___________\\
 
 //note service SMTP Gmail Can't Send To Temp Email If you want to use temp email do it in another service
 usetempemail = false; // kalau true boleh sing up pakai email temp kalau pakai service gmail pakai false je
 servicesmtp = "Gmail"; //Ada gmail ada sendinblue ikut masing2 limit gmail 500 limit sendinblue 300 free. List service smtp : https://nodemailer.com/smtp/well-known/
 sendemail = "obasprom252@gmail.com"; //Email SMTP
-fromsendemail = "obasprom252@gmail.com"; // From Email SMTP 
+fromsendemail = "obasprom252@gmail.com"; // From Email SMTP
 sendpwmail = "dakwjiuwrqenpooc"; // Password Email SMTP
 domain = "api.alpha-md.rf.gd"; // domain website tanpa http or https
 
@@ -119,6 +122,5 @@ loghandler = {
     message: "[!] Please Verify Email",
   },
 };
-
 
 //mongodb+srv://api:api@api.pldyojn.mongodb.net/?retryWrites=true&w=majority&appName=api
