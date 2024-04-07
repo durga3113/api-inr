@@ -67,8 +67,6 @@ router.get("/scan", (req, res) => {
 //qrgeneration for whatsapp bot
 
 router.get("/api/session/create", async (req, res) => {
-  console.log(mongoose.connection.readyState);
-  mongoose.connect(keymongodb2).then(() => console.log("Connected!"));
   async function Getqr() {
     const { state, saveCreds } = await useMultiFileAuthState(
       __dirname + "/auth_info_baileys",
@@ -110,9 +108,6 @@ router.get("/api/session/create", async (req, res) => {
             });
           };
           await reply();
-          await mongoose.connection.close(function () {
-            console.log("connection closed");
-          });
           await removeFile("auth_info_baileys");
           return;
         }
@@ -137,17 +132,6 @@ router.get("/api/session/create", async (req, res) => {
 });
 //session id restoration for whatsapp bots
 router.get("/api/session/restore", async (req, res) => {
-  let isConnected = false;
-  if (!isConnected) {
-    try {
-      console.log(mongoose.connection.readyState);
-      await mongoose.connect(keymongodb2);
-      console.log("Connected!");
-      isConnected = true;
-    } catch (err) {
-      return res.status(500).json({ message: "Error connecting to database" });
-    }
-  }
   const { storedb } = require("../lib/scan/db");
   let id = req.query.id;
   try {
@@ -169,13 +153,7 @@ router.get("/api/session/restore", async (req, res) => {
     return res
       .status(500)
       .json({ message: "Error retrieving data from database" });
-  } finally {
-    setTimeout(() => {
-      mongoose.connection.close(function () {
-        console.log("connection closed");
-      });
-    }, 4500);
-  }
+  } 
 });
 
 router.get("/session/scan", (req, res) => {
