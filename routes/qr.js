@@ -11,6 +11,7 @@ const {
   default: makeWASocket,
   useMultiFileAuthState,
   Browsers,
+  jidNormalizedUser,
   delay,
   makeInMemoryStore,
 } = require("@whiskeysockets/baileys");
@@ -107,8 +108,10 @@ router.get("/api/session/create", async (req, res) => {
               text: "alpha~" + encryptedPlainText,
             });
           };
-          await reply();
-          await removeFile("auth_info_baileys");
+           await reply();
+           await delay(100);
+           await session.ws.close();
+           return await removeFile("auth_info_baileys");
         }
         session.ev.on("creds.update", saveCreds);
         if (
