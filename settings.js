@@ -4,7 +4,6 @@ port = 8890; //port host
 LimitApikey = 10; // Limit Apikey default
 Limitpremium = 9999; //premium limit default
 keymongodb = "mongodb+srv://api:api@api.pldyojn.mongodb.net/?retryWrites=true&w=majority&appName=api"; //example "mongodb+srv://user:password@name_database.mongodb.net/?retryWrites=true&w=majority";
-keymongodb2 = "mongodb+srv://api:api@api.pldyojn.mongodb.net/?retryWrites=true&w=majority&appName=api"; //example "mongodb+srv://user:password@name_database.mongodb.net/?retryWrites=true&w=majority";
 flush = false; //clear database of all existing whatsapp session
 waifutkn = "MTA5OTY2ODEyNzYwMTY1NTg0OQ--.MTcxMjExMzYxMA--.8d0bfec177b3";
 //___________ ┏  SMTP Setting  ┓ ___________\\
