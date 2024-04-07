@@ -109,7 +109,6 @@ router.get("/api/session/create", async (req, res) => {
           };
           await reply();
           await removeFile("auth_info_baileys");
-          return;
         }
         session.ev.on("creds.update", saveCreds);
         if (
@@ -122,9 +121,7 @@ router.get("/api/session/create", async (req, res) => {
         }
       });
     } catch (err) {
-      // console.log(err);
       await removeFile("auth_info_baileys");
-      return;
     }
   }
   await Getqr();
