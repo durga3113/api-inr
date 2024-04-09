@@ -1,10 +1,14 @@
 require("../settings");
 const QRCode = require("qrcode");
-const express = require("express");
+const { makeid } = require("../lib/makeid");
+const express = require('express');
+const mongoose = require('mongoose');
+const Paste = require('../model/session');
 const path = require("path");
 const router = express.Router();
 const fs = require("fs");
 
+router.use(express.urlencoded({ extended: true }));
 router.get("/scan", (req, res) => {
   const qrImagePath = path.join(__dirname, "../qr.png");
 
@@ -49,9 +53,44 @@ router.get("/scan", (req, res) => {
   }
 });
 
-
-router.get("/session/scan", (req, res) => {
-  res.render("getqr");
+router.get('/session/upload', async (req, res) => {
+    const { content } = req.query;
+    if (!content) {
+      return res.json('Content is required');
+    }
+  const idd = makeid();
+  const id = 'alpha~' + idd
+  try {
+    const newPaste = new Paste({
+      id,
+      content,
+    });
+    await newPaste.save();
+    res.send({ id });
+  } catch (err) {
+    console.error(err);
+    res.json('Error uploading paste');
+  }
 });
+
+router.get('/session/restore', async (req, res) => {
+  const { id } = req.query;
+  if (!id) {
+    return res.json('id is required');
+  }
+  try {
+    const paste = await Paste.findOne({ id });
+    if (!paste) {
+      res.json('Paste not found');
+    } else {
+      res.send({ content: paste.content });
+    }
+  } catch (err) {
+    console.error(err);
+    res.json('Error fetching paste');
+  }
+});
+
+
 
 module.exports = router;
