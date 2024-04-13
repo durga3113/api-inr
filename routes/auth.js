@@ -396,5 +396,9 @@ var checkpw = resetpw.validate(password)
     }
 });
 
+router.get('/deploy/heroku', (req, res) => {
+        res.render("heroku");
+});
+
 
 module.exports = router;
