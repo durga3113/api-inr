@@ -1,7 +1,7 @@
 require("dotenv").config();
 creator = "Cipher"; // Name
 port = 8890; //port host
-LimitApikey = 10; // Limit Apikey default
+LimitApikey = 100; // Limit Apikey default
 Limitpremium = 9999; //premium limit default
 keymongodb = "mongodb+srv://api:api@api.pldyojn.mongodb.net/?retryWrites=true&w=majority&appName=api"; //example "mongodb+srv://user:password@name_database.mongodb.net/?retryWrites=true&w=majority";
 flush = false; //clear database of all existing whatsapp session
