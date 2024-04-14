@@ -58,8 +58,7 @@ router.get('/session/upload', async (req, res) => {
     if (!content) {
       return res.json('Content is required');
     }
-  const idd = makeid();
-  const id = 'alpha~' + idd
+  const id = makeid();
   try {
     const newPaste = new Paste({
       id,
