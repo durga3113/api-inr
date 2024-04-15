@@ -222,7 +222,7 @@ router.get('/api/info/apikey', async (req, res) => {
         res.json(userData);
     } catch (error) {
         console.error(error);
-        res.status(500).json({
+        res.json({
             status: false,
             creator: `${creator}`,
             error: 'Internal Server Error'
@@ -307,7 +307,7 @@ router.get('/api/ai/c-ai', cekKey, async (req, res) => {
         });
     }
     try {
-        const response = await axios.get(`https://endpoint-character-ai-np4s.onrender.com/get-output?characterid=${encodeURIComponent(characterId)}&message=${encodeURIComponent(message)}`);
+        const response = await axios.get(`https://endpoint-character-ai-9z7t.onrender.com/get-output?characterid=${encodeURIComponent(characterId)}&message=${encodeURIComponent(message)}`);
         const result = {
             creator: 'cipher',
             response: response.data.response,
