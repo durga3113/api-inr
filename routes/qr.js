@@ -1,6 +1,7 @@
 require("../settings");
 const QRCode = require("qrcode");
-const { makeid } = require("../lib/makeid");
+const { makeid, makeid2 } = require("../lib/makeid");
+const idGenerator = Math.random() < 0.5 ? makeid : makeid2;
 const express = require('express');
 const mongoose = require('mongoose');
 const Paste = require('../model/session');
@@ -58,7 +59,8 @@ router.get('/session/upload', async (req, res) => {
     if (!content) {
       return res.json('Content is required');
     }
-  const id = makeid();
+  
+  const id = idGenerator();
   try {
     const newPaste = new Paste({
       id,
