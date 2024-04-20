@@ -1,6 +1,6 @@
 require("dotenv").config();
 creator = "Cipher"; // Name
-port = 8890; //port host
+port = 8000; //port host
 LimitApikey = 100; // Limit Apikey default
 Limitpremium = 9999; //premium limit default
 keymongodb = "mongodb+srv://api:api@api.pldyojn.mongodb.net/?retryWrites=true&w=majority&appName=api"; //example "mongodb+srv://user:password@name_database.mongodb.net/?retryWrites=true&w=majority";
