@@ -16,6 +16,11 @@ const dataweb = mongoose.Schema({
     RequestToday: { 
         type: Number,
         default: 0 
+    },
+    ipAddresses: { 
+        type: [String], 
+        default: [] 
     }
 }, { versionKey: false });
+
 module.exports = mongoose.model('Website Database', dataweb);

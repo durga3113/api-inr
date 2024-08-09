@@ -58,10 +58,6 @@ apibitly = [
   "037c5017712c8f5f154ebbe6f91db1f82793c375",
 ];
 
-//APIKEY RECAPTCHA From https://www.google.com/recaptcha/about/ or https://www.google.com/recaptcha/admin  \\
-recaptcha_key_1 = "6Ldnj4UpAAAAACDG_oSmAGR24jB8oSyPliYEID1L";
-recaptcha_key_2 = "6Ldnj4UpAAAAABTmNHlQwU9GScY8XoeiIjLeOYEb";
-
 //_______________________ ┏  Loghandler  ┓ _______________________\\
 
 loghandler = {
