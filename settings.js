@@ -59,8 +59,8 @@ apibitly = [
 ];
 
 //APIKEY RECAPTCHA From https://www.google.com/recaptcha/about/ or https://www.google.com/recaptcha/admin  \\
-recaptcha_key_1 = "6Lc3kh8qAAAAAAwYXe3g2Mt50P84EqdO7mLnao81";
-recaptcha_key_2 = "6Lc3kh8qAAAAAAAUFUDdxJ-hD2c-eUYHacPA6jAr";
+recaptcha_key_1 = "6Ldnj4UpAAAAACDG_oSmAGR24jB8oSyPliYEID1L";
+recaptcha_key_2 = "6Ldnj4UpAAAAABTmNHlQwU9GScY8XoeiIjLeOYEb";
 
 //_______________________ ┏  Loghandler  ┓ _______________________\\
 

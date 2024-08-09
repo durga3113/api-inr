@@ -5,7 +5,7 @@ require('../controller/passportLocal')(passport);
 const express = require('express');
 const router = express.Router();
 const crypto = require('crypto');
-const isGmail = require('is-gmail')
+const isGmail = require('is-gmail');
 const resetToken = require('../model/resetTokens');
 const user = require('../model/user');
 const dataweb = require('../model/DataWeb');
@@ -14,11 +14,8 @@ const bcryptjs = require('bcryptjs');
 const passwordValidator = require('password-validator');
 const generateApiKey = require('generate-api-key').default;
 const containsEmoji = require('contains-emoji');
-const Recaptcha = require('express-recaptcha').RecaptchaV2;
-const recaptcha = new Recaptcha(recaptcha_key_1, recaptcha_key_2);
 const OTP = require('../model/otp');
 const { sendOTPEmail } = require('../controller/sendotp');
-
 
 async function updateUserCount() {
     try {
@@ -40,65 +37,25 @@ function checkAuth(req, res, next) {
     }
 }
 
- function captchaForgotPassword(req, res, next) {
-    if (req.recaptcha.error) {
-        req.flash('error_messages','reCAPTCHA Invalid');
-        res.redirect('/forgot-password');
-    } else {
-        return next();
-   }
-}
-
-function captchaResetPassword(req, res, next) {
-    const { token } = req.body;
-    if (req.recaptcha.error) {
-        req.flash('error_messages','reCAPTCHA Invalid');
-        res.redirect(`/reset-password?token=${token}`);
-    } else {
-        return next();
-   }
-}
-
-function captchaRegister(req, res, next) {
-    if (req.recaptcha.error) {
-        req.flash('error_messages','reCAPTCHA Invalid');
-        res.redirect('/signup');
-    } else {
-        return next();
-   }
-}
-
- function captchaLogin(req, res, next) {
-    if (req.recaptcha.error) {
-        req.flash('error_messages','reCAPTCHA Invalid');
-        res.redirect('/login');
-    } else {
-        return next();
-    }
- }
-
- function generateOTP() {
+function generateOTP() {
     const min = 100000;
     const max = 999999;
     return Math.floor(Math.random() * (max - min + 1)) + min;
 }
+
 //_______________________ ┏ Router ┓ _______________________\\
 
-
-router.get('/login', recaptcha.middleware.render, (req, res) => {
+router.get('/login', (req, res) => {
     if (req.isAuthenticated()) {
         res.redirect("/docs");
     } else {
         res.render("login", { 
             csrfToken: req.csrfToken(),
-            recaptcha: res.recaptcha
         });
     }
-    
 });
 
-
-router.post('/login', recaptcha.middleware.verify, captchaLogin, (req, res, next) => {
+router.post('/login', (req, res, next) => {
     passport.authenticate('local', async (err, user, info) => {
         if (err) {
             return next(err);
@@ -118,30 +75,26 @@ router.post('/login', recaptcha.middleware.verify, captchaLogin, (req, res, next
     })(req, res, next);
 });
 
-router.get('/signup', recaptcha.middleware.render, (req, res) => {
+router.get('/signup', (req, res) => {
     if (req.isAuthenticated()) {
         res.redirect("/docs");
     } else {
         res.render("signup", { 
             csrfToken: req.csrfToken(),
-            recaptcha: res.recaptcha
          });
     }
 });
 
-router.post('/signup', recaptcha.middleware.verify, captchaRegister, async (req, res) => {
+router.post('/signup', async (req, res) => {
     const { email, username, password, confirmpassword, phoneNumber } = req.body;
     var createpw = new passwordValidator();
     createpw.is().min(8).is().max(30).has().uppercase().has().lowercase().has().digits().has().not().spaces().is().not().oneOf(['Passw0rd', 'Password123']);
-
     var checkpw = createpw.validate(password)
-
     if (!usetempemail) {
-        var checkemail = await isGmail(email)
+        var checkemail = await isGmail(email);
     } else {
-        var checkemail = true
+        var checkemail = true;
     }
-
     if (!email || !username || !password || !confirmpassword || !phoneNumber) {
         req.flash('error_messages', 'All Fields Required !');
         return res.redirect('/signup');
@@ -196,7 +149,6 @@ router.post('/signup', recaptcha.middleware.verify, captchaRegister, async (req,
     }
 });
 
-
 router.get('/verify', (req, res) => {
     if (req.isAuthenticated()) {
         res.redirect("/docs");
@@ -244,21 +196,17 @@ router.get('/getotp', (req, res) => {
 
 router.get('/get-otp', async (req, res) => {
     const { content } = req.query;
-
     const emailRegex = /^\w+([\.-]?\w+)*@\w+([\.-]?\w+)*(\.\w{2,3})+$/;
     const phoneRegex = /^[0-9\-\+\(\) ]{6,}$/;
-
     let method;
-
     if (emailRegex.test(content)) {
         method = 'email';
     } else if (phoneRegex.test(content)) {
         method = 'whatsapp';
     } else {
-	req.flash('error_messages', "Invalid info. Please provide a valid email or  whatsapp phone number.");
+        req.flash('error_messages', "Invalid info. Please provide a valid email or  whatsapp phone number.");
         return res.redirect('/getotp');
     }
-
     try {
         let existingUser;
         if (method === 'email') {
@@ -266,11 +214,9 @@ router.get('/get-otp', async (req, res) => {
         } else if (method === 'whatsapp') {
             existingUser = await user.findOne({ phoneNumber: content });
         }
-
         if (!existingUser) {
             return res.redirect('/signup');
         }
-
         const otp = generateOTP();
         const newOTP = new OTP({
             [method === 'email' ? 'email' : 'phoneNumber']: content,
@@ -279,119 +225,121 @@ router.get('/get-otp', async (req, res) => {
             expiryDate: new Date(Date.now() + 15 * 60 * 1000)
         });
         await newOTP.save();
-
         if (method === 'email') {
             await sendOTPEmail(content, otp);
         } else if (method === 'whatsapp') {
             const sock = req.app.get('whatsappSock');
-       await sendMessage(sock, content, `*ALPHA-API* *VERIFICATION*\n\nYour OTP for verification is: *${otp}*\nplease use within 15 minutes of getting this message\n\n*made with ❤️ by Cipher*`);
+            await sendMessage(sock, content, `*ALPHA-API* *VERIFICATION*\n\nYour OTP for verification is: *${otp}*\nplease use within 15 minutes of getting this message\n\n*made with ❤️ by Cipher*`);
         }
-
         return res.redirect('/verify');
     } catch (error) {
-       req.flash('error_messages', "Error in getting otp please try another method");
+        req.flash('error_messages', "Error in getting otp please try another method");
         return res.redirect('/getotp');
     }
 });
 
-
-router.get('/forgot-password', recaptcha.middleware.render, async (req, res) => {
-    res.render('forgot-password.ejs',  { 
-        csrfToken: req.csrfToken(),
-        recaptcha: res.recaptcha
-     });
-
+router.get('/logout', (req, res) => {
+    req.logout(() => {
+        req.flash('success_messages', "Logged Out Successfully");
+        res.redirect('/login');
+    });
 });
 
-router.post('/forgot-password', recaptcha.middleware.verify, captchaForgotPassword, async (req, res) => {
+router.get('/forgot-password', async (req, res) => {
+    res.render('forgot-password.ejs', { 
+        csrfToken: req.csrfToken(),
+    });
+});
+
+router.post('/forgot-password', async (req, res) => {
     const { email } = req.body;
 
-	if (!email ) {
-        req.flash('error_messages','All Fields Required !');
+    if (!email) {
+        req.flash('error_messages', 'All Fields Required!');
         res.redirect('/forgot-password');
     }
-    var userData = await user.findOne({ email: email });
-    var Cooldown = await resetToken.findOne({ email: email });
+    
+    const userData = await user.findOne({ email });
+    const cooldown = await resetToken.findOne({ email });
 
-if (userData) {
-if (Cooldown) {
-    req.flash('error_messages','Please Dont Spam Wait After 30 minutes after new submit.');
-    res.redirect('/forgot-password')
-            
- }else{
-            var token = crypto.randomBytes(32).toString('hex');
-            var mail = await mailer.sendResetEmail(email, token)
-            if(mail == 'error'){
-                req.flash('error_messages','Error Please Try Again Tomorrow');
+    if (userData) {
+        if (cooldown) {
+            req.flash('error_messages', 'Please Don\'t Spam. Wait 30 minutes before submitting again.');
+            res.redirect('/forgot-password');
+        } else {
+            const token = crypto.randomBytes(32).toString('hex');
+            const mail = await mailer.sendResetEmail(email, token);
+
+            if (mail === 'error') {
+                req.flash('error_messages', 'Error. Please try again tomorrow.');
                 res.redirect('/forgot-password');
-            }else{
-             await resetToken({ token: token, email: email }).save();
-            req.flash('success_messages','Check your email for more info, wait 30 minutes after new submit.');
-            res.redirect('/forgot-password');    
+            } else {
+                await resetToken({ token, email }).save();
+                req.flash('success_messages', 'Check your email for more info. Wait 30 minutes before submitting again.');
+                res.redirect('/forgot-password');
             }
-           
- }
+        }
     } else {
-        req.flash('error_messages','No user Exists with this email');
+        req.flash('error_messages', 'No user exists with this email.');
         res.redirect('/forgot-password');
     }
 });
 
-router.get('/reset-password', recaptcha.middleware.render, async (req, res) => {
+router.get('/reset-password', async (req, res) => {
     const token = req.query.token;
 
     if (token) {
-        var check = await resetToken.findOne({ token: token });
+        const check = await resetToken.findOne({ token });
+
         if (check) {
-            res.render('forgot-password.ejs',  { 
+            res.render('forgot-password.ejs', { 
                 csrfToken: req.csrfToken(),
-                recaptcha: res.recaptcha,
                 reset: true,
                 email: check.email,
-                token: token
-             });
+                token
+            });
         } else {
-            req.flash('error_messages','Token Tampered or Expired.');
+            req.flash('error_messages', 'Token tampered with or expired.');
             res.redirect('/forgot-password');
         }
     } else {
         res.redirect('/login');
     }
-
 });
 
-
-router.post('/reset-password', recaptcha.middleware.verify, captchaResetPassword, async (req, res) => {
+router.post('/reset-password', async (req, res) => {
     const { password, confirmpassword, email, token } = req.body;
-    var resetpw = new passwordValidator();
-resetpw
-.is().min(8)                                   
-.is().max(30)                                 
-.has().uppercase()                              
-.has().lowercase()                              
-.has().digits()                               
-.has().not().spaces()                           
-.is().not().oneOf(['Passw0rd', 'Password123']);
+    const resetpw = new passwordValidator();
 
-var checkpw = resetpw.validate(password)
+    resetpw
+        .is().min(8)
+        .is().max(30)
+        .has().uppercase()
+        .has().lowercase()
+        .has().digits()
+        .has().not().spaces()
+        .is().not().oneOf(['Passw0rd', 'Password123']);
 
-    if (!password || !confirmpassword || confirmpassword != password) {
-        req.flash('error_messages',"Passwords Don't Match !");
+    const checkpw = resetpw.validate(password);
+
+    if (!password || !confirmpassword || confirmpassword !== password) {
+        req.flash('error_messages', 'Passwords don\'t match!');
         res.redirect(`/reset-password?token=${token}`);
-    } else if(!checkpw) {
-        req.flash('error_messages',"Password Must contain at least one number and one uppercase and lowercase letter, and at least 8 or more characters,no emoji and no Space Limit 30 text");
+    } else if (!checkpw) {
+        req.flash('error_messages', 'Password must contain at least one number, one uppercase and lowercase letter, and be at least 8 characters long, with no emojis or spaces, and a 30-character limit.');
         res.redirect(`/reset-password?token=${token}`);
     } else {
-        var salt = await bcryptjs.genSalt(12);
+        const salt = await bcryptjs.genSalt(12);
+
         if (salt) {
-            var hash = await bcryptjs.hash(password, salt);
-            await user.findOneAndUpdate({ email: email }, { $set: { password: hash } });
-            await resetToken.findOneAndDelete({ token: token });
-            req.flash('success_messages', 'Password Has Change')
+            const hash = await bcryptjs.hash(password, salt);
+            await user.findOneAndUpdate({ email }, { $set: { password: hash } });
+            await resetToken.findOneAndDelete({ token });
+            req.flash('success_messages', 'Password has been changed.');
             res.redirect('/login');
         } else {
-        req.flash('error_messages',"Unexpected Error Try Again");
-        res.redirect(`/reset-password?token=${token}`);
+            req.flash('error_messages', 'Unexpected error. Please try again.');
+            res.redirect(`/reset-password?token=${token}`);
         }
     }
 });
